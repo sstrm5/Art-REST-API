@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: example-db
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    env_file:
+     - ../.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    env_file:
+     - ../.env
+    ports:
+      - "${PGADMIN_PORT}:80"
+    volumes:
+     - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  pg_data:
+  pgadmin_data:
