@@ -24,3 +24,8 @@ def get_question_list_handler(
         total=question_count,
     )
     return ApiResponse(data=ListPaginatedResponse(items=items, pagination=pagination_out))
+
+
+@router.get('/hello')
+def hello(request, name):
+    return {'message': f'Hello, {name}!'}
