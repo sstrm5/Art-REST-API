@@ -16,3 +16,6 @@ class Subject(TimedBaseModel):
     class Meta:
         verbose_name = 'Тема'
         verbose_name_plural = 'Темы'
+
+    def __str__(self) -> str:
+        return self.subject

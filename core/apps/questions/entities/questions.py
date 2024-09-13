@@ -5,6 +5,7 @@ from datetime import datetime
 @dataclass
 class Question:
     id: int
+    test: str
     title: str
     description: str
     subject: str

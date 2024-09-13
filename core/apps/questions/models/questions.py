@@ -11,6 +11,14 @@ class Test(TimedBaseModel):
         max_length=255,
         blank=True,
     )
+    subject = models.ForeignKey(
+        Subject,
+        verbose_name='Тема',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='tests',
+    )
     work_time = models.IntegerField(
         verbose_name='Время выполнения (мин)',
         blank=True,
@@ -21,11 +29,6 @@ class Test(TimedBaseModel):
     description = models.TextField(
         verbose_name='Описание теста',
         blank=True,
-    )
-    subject = forms.ModelChoiceField(
-        queryset=Subject.objects.filter(is_visible=True),
-        label='subject',
-        widget=forms.Select,
     )
     is_visible = models.BooleanField(
         verbose_name='Виден ли тест в списке',
@@ -43,6 +46,8 @@ class Test(TimedBaseModel):
             title=self.title,
             description=self.description,
             subject=self.subject,
+            work_time=self.work_time,
+            question_count=self.question_count,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
@@ -65,13 +70,16 @@ class Question(TimedBaseModel):
         verbose_name='Заголовок вопроса',
         max_length=255,
     )
+    subject = models.ForeignKey(
+        Subject,
+        verbose_name='Тема',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        limit_choices_to={'is_visible': True},  # Filter choices to only visible subjects.  # Add this line if you want to restrict choices to visible subjects.  # This is not a recommended practice. It's better to use a separate model for subjects.
+    )
     description = models.TextField(
         verbose_name='Описание вопроса',
-    )
-    subject = forms.ModelChoiceField(
-        queryset=Subject.objects.filter(is_visible=True),
-        label='subject',
-        widget=forms.Select,
         blank=True,
     )
     is_visible = models.BooleanField(
@@ -116,9 +124,9 @@ class Answer(TimedBaseModel):
     def to_entity(self) -> AnswerEntity:
         return AnswerEntity(
             id=self.id,
-            title=self.title,
-            description=self.description,
-            subject=self.subject,
+            question_id=self.question.id,
+            answer_text=self.text,
+            is_correct=self.is_correct,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
