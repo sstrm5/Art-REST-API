@@ -18,7 +18,7 @@ class TestSchema(BaseModel):
     id: int
     title: str
     description: str
-    # subject: TTestItem | dict
+    subject: TTestItem | dict
     work_time: int
     question_count: int
     created_at: datetime
@@ -40,7 +40,7 @@ class TestSchema(BaseModel):
 
 class QuestionSchema(BaseModel):
     id: int
-    test: str
+    test_id: int
     title: str
     description: str
     subject: str
@@ -51,6 +51,7 @@ class QuestionSchema(BaseModel):
     def from_entity(entity: QuestionEntity) -> 'QuestionSchema':
         return QuestionSchema(
             id=entity.id,
+            test_id=entity.test_id,
             title=entity.title,
             description=entity.description,
             subject=entity.subject,

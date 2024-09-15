@@ -14,7 +14,7 @@ from core.apps.questions.services.questions import (
     ORMAnswerService,
     )
 from ninja import Query, Router
-from core.api.schemas import ApiResponse, ListPaginatedResponse
+from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
 from core.api.v1.questions.schemas import (
     TestSchema,
     QuestionSchema,
@@ -38,7 +38,19 @@ def get_test_list_handler(
         limit=pagination_in.limit,
         total=test_count,
     )
+
     return ApiResponse(data=ListPaginatedResponse(items=items, pagination=pagination_out))
+
+
+@router.get('/{test_id}', response=ApiResponse[ListResponse[QuestionSchema]])
+def get_test_handler(request, test_id: int) -> ApiResponse[QuestionSchema]:
+    service: BaseQuestionService = ORMQuestionService()
+    question_list = service.get_question_list(test_id=test_id)
+    # question_count = service.get_question_count(test_id=test_id)
+    items = [QuestionSchema.from_entity(obj) for obj in question_list]
+    
+    return ApiResponse(data=ListResponse(items=items))
+
 
 
 @router.get('/hello')

@@ -45,7 +45,7 @@ class Test(TimedBaseModel):
             id=self.id,
             title=self.title,
             description=self.description,
-            subject=self.subject,
+            subject=self.subject.__str__(),
             work_time=self.work_time,
             question_count=self.question_count,
             created_at=self.created_at,
@@ -91,8 +91,9 @@ class Question(TimedBaseModel):
         return QuestionEntity(
             id=self.id,
             title=self.title,
+            test_id=self.test.pk,
             description=self.description,
-            subject=self.subject,
+            subject=self.subject.__str__(),
             created_at=self.created_at,
             updated_at=self.updated_at,
         )

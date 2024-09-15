@@ -8,7 +8,7 @@ from core.apps.questions.models.questions import Test as TestModel, Question as 
 
 class BaseTestService(ABC):
     @abstractmethod
-    def get_test_list(self, filters: QuestionFilters, pagination: PaginationIn) -> Iterable[Question]:
+    def get_test_list(self, filters: QuestionFilters, pagination: PaginationIn) -> Iterable[Test]:
         ...
 
     @abstractmethod
@@ -18,11 +18,11 @@ class BaseTestService(ABC):
 
 class BaseQuestionService(ABC):
     @abstractmethod
-    def get_question_list(self, filters: QuestionFilters, pagination: PaginationIn) -> Iterable[Question]:
+    def get_question_list(self, test_id: int) -> Iterable[Question]:
         ...
 
     @abstractmethod
-    def get_question_count(self, filters: QuestionFilters) -> int:
+    def get_question_count(self, test_id) -> int:
         ...
 
 
@@ -46,12 +46,12 @@ class ORMTestService(BaseTestService):
 
 
 class ORMQuestionService(BaseQuestionService):
-    def get_question_list(self, filters: QuestionFilters, pagination: PaginationIn) -> Iterable[Question]:
-        qs = QuestionModel.objects.filter(is_visible=True)[pagination.offset:pagination.offset + pagination.limit]
+    def get_question_list(self, test_id) -> Iterable[Question]:
+        qs = QuestionModel.objects.filter(is_visible=True, test__id=test_id)
         return [question.to_entity() for question in qs]
     
-    def get_question_count(self, filters: QuestionFilters) -> int:
-        return QuestionModel.objects.filter(is_visible=True).count()
+    def get_question_count(self, test_id) -> int:
+        return QuestionModel.objects.filter(is_visible=True, test_id=test_id).count()
 
 
 class ORMAnswerService(BaseAnswerService):

@@ -15,6 +15,10 @@ class PingResponseSchema(Schema):
     result: bool
 
 
+class ListResponse(Schema, Generic[TListItem]):
+    items: list[TListItem]
+
+
 class ListPaginatedResponse(Schema, Generic[TListItem]):
     items: list[TListItem]
     pagination: PaginationOut
