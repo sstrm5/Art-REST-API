@@ -3,22 +3,18 @@ from core.api.filters import PaginationIn, PaginationOut
 from core.api.v1.questions.filters import (
     TestFilters,
     QuestionFilters,
-    AnswerFilters,
     )
 from core.apps.questions.services.questions import (
     BaseTestService,
     BaseQuestionService,
-    BaseAnswerService,
     ORMTestService,
     ORMQuestionService,
-    ORMAnswerService,
     )
 from ninja import Query, Router
 from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
 from core.api.v1.questions.schemas import (
     TestSchema,
     QuestionSchema,
-    AnswerSchema,
     )
 
 router = Router(tags=['Questions'])

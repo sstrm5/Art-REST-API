@@ -2,7 +2,7 @@ from django.db import models
 from django import forms
 
 from core.apps.common.models import TimedBaseModel
-from core.apps.questions.entities.questions import Question as QuestionEntity, Test as TestEntity, Answer as AnswerEntity
+from core.apps.questions.entities.questions import Question as QuestionEntity, Test as TestEntity
 from .subjects import Subject
 
 class Test(TimedBaseModel):
@@ -82,18 +82,28 @@ class Question(TimedBaseModel):
         verbose_name='Описание вопроса',
         blank=True,
     )
+    weight = models.PositiveIntegerField(
+        verbose_name='Вес вопроса',
+        default=1,
+    )
     is_visible = models.BooleanField(
         verbose_name='Виден ли вопрос в списке',
         default=True,
     )
 
+    @property
+    def answers_dict(self) -> dict:
+        return {answer.text: answer.is_correct for answer in self.answers.all()}
+
     def to_entity(self) -> QuestionEntity:
         return QuestionEntity(
             id=self.id,
             title=self.title,
+            answers=self.answers_dict,
             test_id=self.test.pk,
             description=self.description,
             subject=self.subject.__str__(),
+            weight=self.weight,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
@@ -112,6 +122,7 @@ class Answer(TimedBaseModel):
         Question,
         verbose_name='Вопрос',
         on_delete=models.CASCADE,
+        related_name='answers',
     )
     text = models.CharField(
         verbose_name='Ответ',
@@ -122,16 +133,7 @@ class Answer(TimedBaseModel):
         default=False,
     )
 
-    def to_entity(self) -> AnswerEntity:
-        return AnswerEntity(
-            id=self.id,
-            question_id=self.question.id,
-            answer_text=self.text,
-            is_correct=self.is_correct,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
-        )
-    
+
     def __str__(self) -> str:
         return self.text
     

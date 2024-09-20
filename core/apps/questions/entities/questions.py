@@ -7,8 +7,10 @@ class Question:
     id: int
     test_id: int
     title: str
+    answers: dict[str, bool]  # dict of answer_text: is_correct pairs
     description: str
     subject: str
+    weight: int
     created_at: datetime
     updated_at: datetime
 
@@ -24,12 +26,3 @@ class Test:
     created_at: datetime
     updated_at: datetime
 
-
-@dataclass
-class Answer:
-    id: int
-    question_id: int
-    answer_text: str
-    is_correct: bool
-    created_at: datetime
-    updated_at: datetime

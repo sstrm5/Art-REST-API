@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from core.apps.questions.entities.questions import (
                                                     Test as TestEntity,
                                                     Question as QuestionEntity,
-                                                    Answer as AnswerEntity,
                                                     )
 
 
@@ -42,6 +41,7 @@ class QuestionSchema(BaseModel):
     id: int
     test_id: int
     title: str
+    answers: dict[str, bool]  # dict of answer_text: is_correct pairs
     description: str
     subject: str
     created_at: datetime
@@ -53,28 +53,11 @@ class QuestionSchema(BaseModel):
             id=entity.id,
             test_id=entity.test_id,
             title=entity.title,
+            answers=entity.answers,
             description=entity.description,
             subject=entity.subject,
+            weight=entity.weight,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
 
-
-class AnswerSchema(BaseModel):
-    id: int
-    question_id: int
-    answer_text: str
-    is_correct: bool
-    created_at: datetime
-    updated_at: datetime | None = None
-
-    @staticmethod
-    def from_entity(entity: AnswerEntity) -> 'AnswerSchema':
-        return AnswerSchema(
-            id=entity.id,
-            question_id=entity.question_id,
-            answer_text=entity.answer_text,
-            is_correct=entity.is_correct,
-            created_at=entity.created_at,
-            updated_at=entity.updated_at,
-        )

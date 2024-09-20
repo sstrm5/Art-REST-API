@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from core.api.v1.questions.filters import TestFilters, QuestionFilters, AnswerFilters
+from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
-from core.apps.questions.entities.questions import Test, Question, Answer
-from core.apps.questions.models.questions import Test as TestModel, Question as QuestionModel, Answer as AnswerModel
+from core.apps.questions.entities.questions import Test, Question
+from core.apps.questions.models.questions import Test as TestModel, Question as QuestionModel
 
 class BaseTestService(ABC):
     @abstractmethod
@@ -53,12 +53,4 @@ class ORMQuestionService(BaseQuestionService):
     def get_question_count(self, test_id) -> int:
         return QuestionModel.objects.filter(is_visible=True, test_id=test_id).count()
 
-
-class ORMAnswerService(BaseAnswerService):
-    def get_answer_list(self, filters: AnswerFilters, pagination: PaginationIn) -> Iterable[Answer]:
-        qs = AnswerModel.objects.filter()[pagination.offset:pagination.offset + pagination.limit]
-        return [answer.to_entity() for answer in qs]
-    
-    def get_answer_count(self, filters: AnswerFilters) -> int:
-        return AnswerModel.objects.filter(is_correct=True).count()
     
