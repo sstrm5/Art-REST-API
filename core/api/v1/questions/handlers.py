@@ -17,7 +17,7 @@ from core.api.v1.questions.schemas import (
     QuestionSchema,
     )
 
-router = Router(tags=['Questions'])
+router = Router(tags=['Tests'])
 
 @router.get('', response=ApiResponse[ListPaginatedResponse[TestSchema]])
 def get_test_list_handler(
@@ -49,6 +49,6 @@ def get_test_handler(request, test_id: int) -> ApiResponse[QuestionSchema]:
 
 
 
-@router.get('/hello')
+@router.get('/hello_world')
 def hello(request, name):
     return {'message': f'Hello, {name}!'}
