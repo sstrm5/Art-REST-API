@@ -1,8 +1,9 @@
 from dataclasses import Field
 from datetime import datetime
 from typing import Generic, TypeVar
-
 from pydantic import BaseModel
+
+from ninja import Schema
 
 from core.apps.questions.entities.questions import (
                                                     Test as TestEntity,
@@ -11,9 +12,10 @@ from core.apps.questions.entities.questions import (
 
 
 TTestItem = TypeVar("TTestItem")
+TData = TypeVar("TData")
 
 
-class TestSchema(BaseModel):
+class TestSchemaOut(Schema):
     id: int
     title: str
     description: str
@@ -24,8 +26,8 @@ class TestSchema(BaseModel):
     updated_at: datetime | None = None
 
     @staticmethod
-    def from_entity(entity: TestEntity) -> 'TestSchema':
-        return TestSchema(
+    def from_entity(entity: TestEntity) -> 'TestSchemaOut':
+        return TestSchemaOut(
             id=entity.id,
             title=entity.title,
             description=entity.description,
@@ -37,7 +39,7 @@ class TestSchema(BaseModel):
         )
 
 
-class QuestionSchema(BaseModel):
+class QuestionSchemaOut(Schema):
     id: int
     test_id: int
     title: str
@@ -48,8 +50,8 @@ class QuestionSchema(BaseModel):
     updated_at: datetime | None = None
 
     @staticmethod
-    def from_entity(entity: QuestionEntity) -> 'QuestionSchema':
-        return QuestionSchema(
+    def from_entity(entity: QuestionEntity) -> 'QuestionSchemaOut':
+        return QuestionSchemaOut(
             id=entity.id,
             test_id=entity.test_id,
             title=entity.title,
@@ -60,4 +62,31 @@ class QuestionSchema(BaseModel):
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
+
+
+class TestDataSchemaIn(Schema):
+    id: int
+    title: str
+    description: str
+    subject: str
+    work_time: int
+    question_count: int
+
+
+class QuestionDataSchemaIn(Schema):
+    id: int
+    test_id: int
+    title: str
+    answers: dict[str, bool]  # dict of answer_text: is_correct pairs
+    description: str
+    subject: str
+
+
+class TestAndQuestionDataSchemaIn(Schema):
+    test_info: TestDataSchemaIn
+    questions: list[QuestionDataSchemaIn]
+
+
+class TestSchemaIn(Schema, Generic[TData]):
+    data: TestAndQuestionDataSchemaIn
 

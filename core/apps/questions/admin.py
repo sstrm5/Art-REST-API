@@ -10,7 +10,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'test', 'created_at', 'updated_at', 'description', 'subject', 'is_visible')
+    list_display = ('id', 'title', 'test', 'test_id', 'created_at', 'updated_at', 'description', 'subject', 'is_visible')
 
 @admin.register(Answer)
 class ProductAdmin(admin.ModelAdmin):

@@ -11,20 +11,20 @@ TData = TypeVar("TData")
 TListItem = TypeVar("TListItem")
 
 
-class PingResponseSchema(Schema):
+class PingResponseSchema(BaseModel):
     result: bool
 
 
-class ListResponse(Schema, Generic[TListItem]):
+class ListResponse(BaseModel, Generic[TListItem]):
     items: list[TListItem]
 
 
-class ListPaginatedResponse(Schema, Generic[TListItem]):
+class ListPaginatedResponse(BaseModel, Generic[TListItem]):
     items: list[TListItem]
     pagination: PaginationOut
 
 
-class ApiResponse(Schema, Generic[TData]):
+class ApiResponse(BaseModel, Generic[TData]):
     data: TData | dict = Field(default_factory=dict)
     meta: dict[str, Any] = Field(default_factory=dict)
     errors: list[Any] = Field(default_factory=list)
