@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+import json
 from typing import Iterable
 
 from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
-from core.apps.questions.entities.questions import Test, Question
+from core.api.v1.questions.schemas import TestSchemaIn
+from core.apps.questions.entities.questions import Test, Question, AnswersIn
 from core.apps.questions.models.questions import (
     Test as TestModel,
     Question as QuestionModel,
@@ -56,7 +58,7 @@ class ORMTestService(BaseTestService):
     def get_test_count(self, filters: TestFilters) -> int:
         return TestModel.objects.filter(is_visible=True).count()
     
-    def create_test(self, data) -> Test:
+    def create_test(self, data: TestSchemaIn) -> Test:
         data = data.data
         test_data = data.test_info
         question_list_data = data.questions
@@ -103,6 +105,24 @@ class ORMTestService(BaseTestService):
             raise Exception
         return test.to_entity()
         
+
+    def check_test(self, data: AnswersIn, questions: Iterable[Question]):
+        correct_answers = {}
+        for question_number, question in enumerate(questions, 1):
+            correct_question_answers = []
+            for answer_index, answer_is_correct in enumerate(question.answers.values()):
+                if answer_is_correct:
+                    correct_question_answers.append(answer_index)
+            correct_answers[str(question_number)] = correct_question_answers
+        
+        user_answers = data.user_answers
+        total_score = 0
+        for question_number in range(1, len(user_answers) + 1):
+            question_number = json.dumps(question_number)
+            if user_answers[question_number] == correct_answers[question_number]:
+                    total_score += 1
+
+        return data.test_id, user_answers, correct_answers, total_score
 
 
 class ORMQuestionService(BaseQuestionService):

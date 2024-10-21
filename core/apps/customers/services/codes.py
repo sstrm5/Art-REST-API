@@ -20,11 +20,11 @@ class BaseCodeService(ABC):
 class DjangoCacheCodeService(BaseCodeService):
     def generate_code(self, customer: CustomerEntity) -> str:
         code = str(random.randint(100000, 999999))
-        cache.set(customer.phone, code)
+        cache.set(customer.email, code)
         return code
     
     def validate_code(self, code: str, customer: CustomerEntity) -> None:
-        cached_code = cache.get(customer.phone)
+        cached_code = cache.get(customer.email)
 
         if cached_code is None:
             raise CodeNotFoundException(code=code)
@@ -33,7 +33,7 @@ class DjangoCacheCodeService(BaseCodeService):
             raise CodeNotEqualException(
                 code=code,
                 cached_code=cached_code,
-                customer_phone=customer.phone,
+                customer_email=customer.email,
             )
         
-        cache.delete(customer.phone)
+        cache.delete(customer.email)

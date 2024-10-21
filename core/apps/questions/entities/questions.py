@@ -26,3 +26,15 @@ class Test:
     created_at: datetime
     updated_at: datetime
 
+
+@dataclass
+class AnswersIn:
+    test_id: int
+    user_answers: dict[int, int]
+
+@dataclass
+class AnswersOut:
+    test_id: int
+    user_answers: dict[int, int]
+    correct_answers: dict[int, list[int]]
+    total_score: int

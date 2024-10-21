@@ -1,6 +1,7 @@
 from dataclasses import Field
 from datetime import datetime
 from typing import Generic, TypeVar
+from core.apps.questions.entities.attempts import Attempt as AttemptEntity
 from pydantic import BaseModel
 
 from ninja import Schema
@@ -90,3 +91,47 @@ class TestAndQuestionDataSchemaIn(Schema):
 class TestSchemaIn(Schema, Generic[TData]):
     data: TestAndQuestionDataSchemaIn
 
+
+class AnswersSchemaIn(Schema):
+    test_id: int
+    user_answers: dict[str, list[int]]
+
+class AnswersSchemaOut(Schema):
+    test_id: int
+    user_answers: dict[str, list[int]]
+    correct_answers: dict[str, list[int]]
+    total_score: int
+
+
+class CheckUserExistenceIn(Schema):
+    email: str
+
+
+class CheckUserExistenceOut(Schema):
+    is_user_exists: bool
+
+
+class AttemptSchemaIn(Schema):
+    user_id: int
+    test_id: int
+    start_time: datetime
+    end_time: datetime
+    user_answers: dict[str, list[int]]
+    total_score: int
+
+
+class AttemptSchemaOut(Schema):
+    user_id: int
+    test_id: int
+    start_time: datetime
+    end_time: datetime
+    total_score: int
+
+    def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
+        return AttemptSchemaOut(
+            user_id=entity.user_id,
+            test_id=entity.test_id,
+            start_time=entity.start_time,
+            end_time=entity.end_time,
+            total_score=entity.total_score,
+        )

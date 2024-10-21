@@ -1,8 +1,14 @@
 from ninja import Schema
 
 
-class AuthInSchema(Schema):
-    phone: str
+class CreateAndAuthInSchema(Schema):
+    email: str
+    first_name: str
+    last_name: str
+
+
+class GetAndAuthInSchema(Schema):
+    email: str
 
 
 class AuthOutSchema(Schema):
@@ -16,7 +22,7 @@ class TokenOutSchema(Schema):
 
 
 class TokenInSchema(Schema):
-    phone: str
+    email: str
     code: str
 
 

@@ -52,6 +52,8 @@ class Test(TimedBaseModel):
             updated_at=self.updated_at,
         )
     
+    
+
     def __str__(self) -> str:
         return self.title
 

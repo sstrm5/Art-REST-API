@@ -6,11 +6,23 @@ from core.apps.customers.entities import CustomerEntity
 
 
 class Customer(TimedBaseModel):
-    phone = models.CharField(
+    email = models.CharField(
         verbose_name='Номер телефона',
         max_length=20,
         unique=True,
         help_text='Уникальный номер телефона для каждого пользователя',
+    )
+
+    first_name = models.CharField(
+        verbose_name='Имя',
+        max_length=50,
+        null=True,
+    )
+
+    last_name = models.CharField(
+        verbose_name='Фамилия',
+        max_length=50,
+        null=True,
     )
 
     access_token = models.CharField(
@@ -37,12 +49,14 @@ class Customer(TimedBaseModel):
 
 
     def __str__(self) -> str:
-        return self.phone
+        return self.email
     
     
     def to_entity(self) -> CustomerEntity:
         return CustomerEntity(
-            phone=self.phone,
+            email=self.email,
+            first_name=self.first_name,
+            last_name=self.last_name,
             created_at=self.created_at,
         )
     

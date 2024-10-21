@@ -23,7 +23,7 @@ class CodeNotFoundException(CodeException):
 class CodeNotEqualException(CodeException):
     code: str
     cached_code: str
-    customer_phone: str
+    customer_email: str
 
     @property
     def message(self):

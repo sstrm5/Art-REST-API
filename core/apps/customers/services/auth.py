@@ -13,23 +13,37 @@ class BaseAuthService(ABC):
     sender_service: BaseSenderService
 
     @abstractmethod
-    def authorize(self, phone: str):
+    def get_and_authorize(self, email: str):
         ...
 
+
     @abstractmethod
-    def confirm(self, phone:str, code: str):
+    def create_and_authorize(self, email: str, first_name: str, last_name: str):
+        ...
+
+
+    @abstractmethod
+    def confirm(self, email:str, code: str):
         ...
 
 
 class AuthService(BaseAuthService):
-    def authorize(self, phone: str):
-        customer = self.customer_service.get_or_create(phone=phone)
+    def get_and_authorize(self, email: str):
+        customer = self.customer_service.get(email=email)
+        if not customer:
+            raise ValueError(f'No customer found with email: {email}')
+        code = self.codes_service.generate_code(customer=customer)
+        self.sender_service.send_code(customer=customer, code=code)
+    
+
+    def create_and_authorize(self, email: str, first_name: str, last_name: str):
+        customer = self.customer_service.get_or_create(email=email, first_name=first_name, last_name=last_name)
         code = self.codes_service.generate_code(customer=customer)
         self.sender_service.send_code(customer=customer, code=code)
 
     
-    def confirm(self, phone: str, code: str):
-        customer = self.customer_service.get(phone=phone)
+    def confirm(self, email: str, code: str):
+        customer = self.customer_service.get(email=email)
         self.codes_service.validate_code(code=code, customer=customer)
         access_token, refresh_token, expires_in = self.customer_service.generate_token(customer=customer)
 

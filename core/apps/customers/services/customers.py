@@ -9,11 +9,11 @@ from core.apps.customers.models import Customer
 
 class BaseCustomerService(ABC):
     @abstractmethod
-    def get_or_create(self, phone: str) -> CustomerEntity:
+    def get_or_create(self, email: str, first_name: str, last_name: str) -> CustomerEntity:
         ...
     
     @abstractmethod
-    def get(self, phone: str) -> CustomerEntity:
+    def get(self, email: str) -> CustomerEntity:
         ...
 
     @abstractmethod
@@ -21,15 +21,24 @@ class BaseCustomerService(ABC):
         ...
 
 class ORMCustomerService(BaseCustomerService):
-    def get_or_create(self, phone: str) -> CustomerEntity:
-        customer, _ = Customer.objects.get_or_create(phone=phone)
+    def get_or_create(self, email: str, first_name: str, last_name: str) -> CustomerEntity:
+        customer, _ = Customer.objects.get_or_create(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            )
 
         return customer.to_entity()
     
-    def get(self, phone: str) -> CustomerEntity:
-        customer = Customer.objects.get(phone=phone)
+    def get(self, email: str) -> CustomerEntity:
+        customer = Customer.objects.get(email=email)
 
         return customer.to_entity()
+    
+    
+    def check_user_existence(self, email: str):
+        return Customer.objects.filter(email=email).exists()
+    
     
     def generate_token(self, customer: CustomerEntity) -> tuple:
         new_access_token = str(uuid4())
@@ -37,7 +46,7 @@ class ORMCustomerService(BaseCustomerService):
         current_time = int(time.time())
         expires_in = current_time + 3600
         refresh_expires_in = current_time + 604800
-        Customer.objects.filter(phone=customer.phone).update(
+        Customer.objects.filter(email=customer.email).update(
             access_token=new_access_token,
             refresh_token=new_refresh_token,
             expires_in=expires_in,
@@ -55,7 +64,7 @@ class ORMCustomerService(BaseCustomerService):
                 new_refresh_token = str(uuid4())
                 expires_in = current_time + 3600
                 refresh_expires_in = current_time + 604800
-                Customer.objects.filter(phone=customer.phone).update(
+                Customer.objects.filter(email=customer.email).update(
                     access_token=new_access_token,
                     refresh_token=new_refresh_token,
                     expires_in=expires_in,
