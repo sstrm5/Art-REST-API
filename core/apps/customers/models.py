@@ -7,10 +7,9 @@ from core.apps.customers.entities import CustomerEntity
 
 class Customer(TimedBaseModel):
     email = models.CharField(
-        verbose_name='Номер телефона',
-        max_length=20,
+        verbose_name='Почта пользователя',
         unique=True,
-        help_text='Уникальный номер телефона для каждого пользователя',
+        help_text='Уникальный почта каждого пользователя',
     )
 
     first_name = models.CharField(
@@ -47,11 +46,9 @@ class Customer(TimedBaseModel):
         default=0,
     )
 
-
     def __str__(self) -> str:
         return self.email
-    
-    
+
     def to_entity(self) -> CustomerEntity:
         return CustomerEntity(
             email=self.email,
@@ -59,9 +56,7 @@ class Customer(TimedBaseModel):
             last_name=self.last_name,
             created_at=self.created_at,
         )
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
-    

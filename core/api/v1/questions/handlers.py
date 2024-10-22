@@ -2,7 +2,7 @@ from django.http import HttpRequest
 from core.api.filters import PaginationIn, PaginationOut
 from core.api.v1.questions.filters import (
     TestFilters,
-    )
+)
 from core.apps.questions.entities.questions import AnswersOut
 from core.apps.questions.exceptions.questions import CreateException
 from core.apps.questions.services.attempts import BaseAttemptService, ORMAttemptService
@@ -11,7 +11,7 @@ from core.apps.questions.services.questions import (
     BaseQuestionService,
     ORMTestService,
     ORMQuestionService,
-    )
+)
 from ninja import Query, Router
 from ninja.errors import HttpError
 from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
@@ -22,19 +22,21 @@ from core.api.v1.questions.schemas import (
     TestSchemaIn,
     TestSchemaOut,
     QuestionSchemaOut,
-    )
+)
 
 
 router = Router(tags=['Tests'])
 
+
 @router.get('', response=ApiResponse)
 def get_test_list_handler(
     request: HttpRequest,
-    filters: Query[TestFilters], 
+    filters: Query[TestFilters],
     pagination_in: Query[PaginationIn],
 ) -> ApiResponse:
     service: BaseTestService = ORMTestService()
-    test_list = service.get_test_list(filters=filters, pagination=pagination_in)
+    test_list = service.get_test_list(
+        filters=filters, pagination=pagination_in)
     test_count = service.get_test_count(filters=filters)
     items = [TestSchemaOut.from_entity(obj) for obj in test_list]
     pagination_out = PaginationOut(
@@ -51,7 +53,7 @@ def get_test_handler(request, test_id: int) -> ApiResponse:
     service: BaseQuestionService = ORMQuestionService()
     question_list = service.get_question_list(test_id=test_id)
     items = [QuestionSchemaOut.from_entity(obj) for obj in question_list]
-    
+
     return ApiResponse(data=ListResponse(items=items))
 
 
@@ -59,7 +61,7 @@ def get_test_handler(request, test_id: int) -> ApiResponse:
 def create_test_handler(
     request,
     schema: TestSchemaIn,
-    ) -> ApiResponse:
+) -> ApiResponse:
     try:
         service: BaseTestService = ORMTestService()
         test = service.create_test(data=schema)
@@ -73,12 +75,13 @@ def create_test_handler(
 def check_test_handler(
     request,
     schema: AnswersSchemaIn,
-    ) -> ApiResponse:
+) -> ApiResponse:
     try:
         test_service: BaseTestService = ORMTestService()
         question_service: BaseQuestionService = ORMQuestionService()
         questions = question_service.get_question_list(test_id=schema.test_id)
-        test_id, user_answers, correct_answers, total_score = test_service.check_test(data=schema, questions=questions)
+        test_id, user_answers, correct_answers, total_score = test_service.check_test(
+            data=schema, questions=questions)
 
         return ApiResponse(data=AnswersOut(
             test_id=test_id,
@@ -94,26 +97,26 @@ def check_test_handler(
 def create_attempt_handler(
     request,
     schema: AttemptSchemaIn,
-    ) -> ApiResponse:
-        service: BaseAttemptService = ORMAttemptService()
-        attempt = service.create_attempt(
-            user_id=schema.user_id,
-            test_id=schema.test_id,
-            start_time=schema.start_time,
-            end_time=schema.end_time,
-            user_answers=schema.user_answers,
-            total_score=schema.total_score,
-        )
+) -> ApiResponse:
+    service: BaseAttemptService = ORMAttemptService()
+    attempt = service.create_attempt(
+        user_id=schema.user_id,
+        test_id=schema.test_id,
+        start_time=schema.start_time,
+        end_time=schema.end_time,
+        user_answers=schema.user_answers,
+        total_score=schema.total_score,
+    )
 
-        return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
+    return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
 
 
 @router.get('/{test_id}/attempts', response=ApiResponse)
-def get_test_handler(request, test_id: int) -> ApiResponse:
+def get_attempt_handler(request, test_id: int) -> ApiResponse:
     service: BaseAttemptService = ORMAttemptService()
     attempt_list = service.get_attempt_list(test_id=test_id)
     items = [AttemptSchemaOut.from_entity(obj) for obj in attempt_list]
-    
+
     return ApiResponse(data=ListResponse(items=items))
 
 
