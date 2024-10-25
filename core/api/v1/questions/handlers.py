@@ -16,9 +16,9 @@ from ninja import Query, Router
 from ninja.errors import HttpError
 from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
 from core.api.v1.questions.schemas import (
-    AnswersSchemaIn,
     AttemptSchemaIn,
     AttemptSchemaOut,
+    AttemptUpdateSchema,
     TestSchemaIn,
     TestSchemaOut,
     QuestionSchemaOut,
@@ -74,17 +74,21 @@ def create_test_handler(
 @router.post('/check/test', response=ApiResponse)
 def check_test_handler(
     request,
-    schema: AnswersSchemaIn,
+    schema: AttemptSchemaIn,
 ) -> ApiResponse:
     try:
         test_service: BaseTestService = ORMTestService()
         question_service: BaseQuestionService = ORMQuestionService()
+
         questions = question_service.get_question_list(test_id=schema.test_id)
-        test_id, user_answers, correct_answers, total_score = test_service.check_test(
-            data=schema, questions=questions)
+        user_answers, correct_answers, total_score = test_service.check_test(
+            user_access_token=request.META['HTTP_AUTHORIZATION'],
+            test_id=schema.test_id,
+            questions=questions,
+        )
 
         return ApiResponse(data=AnswersOut(
-            test_id=test_id,
+            test_id=schema.test_id,
             user_answers=user_answers,
             correct_answers=correct_answers,
             total_score=total_score,
@@ -93,6 +97,23 @@ def check_test_handler(
         raise HttpError(status_code=400, message=exception.message)
 
 
+# @router.post('/create/new_attempt', response=ApiResponse)
+# def create_attempt_handler(
+#     request,
+#     schema: AttemptSchemaIn,
+# ) -> ApiResponse:
+#     service: BaseAttemptService = ORMAttemptService()
+#     attempt = service.create_attempt(
+#         user_id=schema.user_id,
+#         test_id=schema.test_id,
+#         start_time=schema.start_time,
+#         end_time=schema.end_time,
+#         user_answers=schema.user_answers,
+#         total_score=schema.total_score,
+#     )
+
+#     return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
+
 @router.post('/create/new_attempt', response=ApiResponse)
 def create_attempt_handler(
     request,
@@ -100,12 +121,23 @@ def create_attempt_handler(
 ) -> ApiResponse:
     service: BaseAttemptService = ORMAttemptService()
     attempt = service.create_attempt(
-        user_id=schema.user_id,
+        user_access_token=request.META['HTTP_AUTHORIZATION'],
         test_id=schema.test_id,
-        start_time=schema.start_time,
-        end_time=schema.end_time,
+    )
+
+    return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
+
+
+@router.post('/update/attempt', response=ApiResponse)
+def update_attempt_handler(
+    request,
+    schema: AttemptUpdateSchema,
+) -> ApiResponse:
+    service: BaseAttemptService = ORMAttemptService()
+    attempt = service.update_attempt(
+        user_access_token=request.META['HTTP_AUTHORIZATION'],
+        test_id=schema.test_id,
         user_answers=schema.user_answers,
-        total_score=schema.total_score,
     )
 
     return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
@@ -120,6 +152,6 @@ def get_attempt_handler(request, test_id: int) -> ApiResponse:
     return ApiResponse(data=ListResponse(items=items))
 
 
-@router.get('/hello_world')
-def hello(request, name):
-    return {'message': f'Hello, {name}!'}
+@router.get('/hello_world/123')
+def hello(request):
+    return {'message': f'{request.META['HTTP_AUTHORIZATION']}'}

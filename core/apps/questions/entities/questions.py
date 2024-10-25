@@ -30,7 +30,7 @@ class Test:
 @dataclass
 class AnswersIn:
     test_id: int
-    user_answers: dict[int, int]
+
 
 @dataclass
 class AnswersOut:

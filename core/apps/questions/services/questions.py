@@ -6,12 +6,14 @@ from typing import Iterable
 from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
 from core.api.v1.questions.schemas import TestSchemaIn
+from core.apps.customers.models import Customer as CustomerModel
 from core.apps.questions.entities.questions import Test, Question, AnswersIn
+from core.apps.questions.models.attempts import Attempt as AttemptModel
 from core.apps.questions.models.questions import (
     Test as TestModel,
     Question as QuestionModel,
     Answer as AnswerModel,
-    )
+)
 from core.apps.questions.models.subjects import Subject
 from core.apps.questions.exceptions.questions import (
     SubjectException,
@@ -52,12 +54,13 @@ class BaseAnswerService(ABC):
 
 class ORMTestService(BaseTestService):
     def get_test_list(self, filters: TestFilters, pagination: PaginationIn) -> Iterable[Test]:
-        qs = TestModel.objects.filter(is_visible=True)[pagination.offset:pagination.offset + pagination.limit]
+        qs = TestModel.objects.filter(is_visible=True)[
+            pagination.offset:pagination.offset + pagination.limit]
         return [test.to_entity() for test in qs]
 
     def get_test_count(self, filters: TestFilters) -> int:
         return TestModel.objects.filter(is_visible=True).count()
-    
+
     def create_test(self, data: TestSchemaIn) -> Test:
         data = data.data
         test_data = data.test_info
@@ -67,7 +70,7 @@ class ORMTestService(BaseTestService):
             subject, _ = Subject.objects.get_or_create(subject=subject)
         except:
             raise SubjectException()
-        
+
         try:
             test = TestModel.objects.create(
                 title=test_data.title,
@@ -81,7 +84,7 @@ class ORMTestService(BaseTestService):
             )
         except Exception:
             raise Exception
-        
+
         try:
             for question_data in question_list_data:
                 question = QuestionModel.objects.create(
@@ -104,9 +107,18 @@ class ORMTestService(BaseTestService):
         except Exception:
             raise Exception
         return test.to_entity()
-        
 
-    def check_test(self, data: AnswersIn, questions: Iterable[Question]):
+    def check_test(
+            self,
+            user_access_token: str,
+            test_id: int,
+            questions: Iterable[Question],
+    ):
+        user = CustomerModel.objects.get(access_token=user_access_token)
+        test = TestModel.objects.get(id=test_id)
+        attempt_number = AttemptModel.objects.filter(
+            user=user, test=test).count()
+
         correct_answers = {}
         for question_number, question in enumerate(questions, 1):
             correct_question_answers = []
@@ -114,23 +126,30 @@ class ORMTestService(BaseTestService):
                 if answer_is_correct:
                     correct_question_answers.append(answer_index)
             correct_answers[str(question_number)] = correct_question_answers
-        
-        user_answers = data.user_answers
+
+        user_answers = AttemptModel.objects.get(
+            test=test_id,
+            user=user,
+            attempt_number=attempt_number,
+        ).user_answers
         total_score = 0
         for question_number in range(1, len(user_answers) + 1):
             question_number = json.dumps(question_number)
             if user_answers[question_number] == correct_answers[question_number]:
-                    total_score += 1
+                total_score += 1
 
-        return data.test_id, user_answers, correct_answers, total_score
+        AttemptModel.objects.filter(
+            user=user,
+            test=test,
+            attempt_number=attempt_number).update(total_score=total_score)
+
+        return user_answers, correct_answers, total_score
 
 
 class ORMQuestionService(BaseQuestionService):
     def get_question_list(self, test_id) -> Iterable[Question]:
         qs = QuestionModel.objects.filter(is_visible=True, test__id=test_id)
         return [question.to_entity() for question in qs]
-    
+
     def get_question_count(self, test_id) -> int:
         return QuestionModel.objects.filter(is_visible=True, test_id=test_id).count()
-
-    

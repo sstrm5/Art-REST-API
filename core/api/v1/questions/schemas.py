@@ -7,9 +7,9 @@ from pydantic import BaseModel
 from ninja import Schema
 
 from core.apps.questions.entities.questions import (
-                                                    Test as TestEntity,
-                                                    Question as QuestionEntity,
-                                                    )
+    Test as TestEntity,
+    Question as QuestionEntity,
+)
 
 
 TTestItem = TypeVar("TTestItem")
@@ -92,10 +92,6 @@ class TestSchemaIn(Schema, Generic[TData]):
     data: TestAndQuestionDataSchemaIn
 
 
-class AnswersSchemaIn(Schema):
-    test_id: int
-    user_answers: dict[str, list[int]]
-
 class AnswersSchemaOut(Schema):
     test_id: int
     user_answers: dict[str, list[int]]
@@ -112,26 +108,18 @@ class CheckUserExistenceOut(Schema):
 
 
 class AttemptSchemaIn(Schema):
-    user_id: int
     test_id: int
-    start_time: datetime
-    end_time: datetime
+
+
+class AttemptUpdateSchema(Schema):
+    test_id: int
     user_answers: dict[str, list[int]]
-    total_score: int
 
 
 class AttemptSchemaOut(Schema):
-    user_id: int
     test_id: int
-    start_time: datetime
-    end_time: datetime
-    total_score: int
 
     def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
         return AttemptSchemaOut(
-            user_id=entity.user_id,
             test_id=entity.test_id,
-            start_time=entity.start_time,
-            end_time=entity.end_time,
-            total_score=entity.total_score,
         )

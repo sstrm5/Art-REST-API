@@ -19,8 +19,9 @@ class Attempt(TimedBaseModel):
         on_delete=models.CASCADE,
     )
 
-    start_time = models.DateTimeField(
-        verbose_name='Начало выполнения теста',
+    attempt_number = models.IntegerField(
+        verbose_name='Номер попытки',
+        default=1,
     )
 
     end_time = models.DateTimeField(
@@ -37,18 +38,15 @@ class Attempt(TimedBaseModel):
         null=True,
     )
 
-
     class Meta:
         verbose_name = 'Попытка'
         verbose_name_plural = 'Попытки'
-
 
     def to_entity(self) -> AttemptEntity:
         return AttemptEntity(
             id=self.id,
             user_id=self.user.pk,
             test_id=self.test.pk,
-            start_time=self.start_time,
             end_time=self.end_time,
             user_answers=self.user_answers,
             total_score=self.total_score,
