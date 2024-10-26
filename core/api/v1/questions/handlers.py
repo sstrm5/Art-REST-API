@@ -3,6 +3,7 @@ from core.api.filters import PaginationIn, PaginationOut
 from core.api.v1.questions.filters import (
     TestFilters,
 )
+from core.apps.questions.containers import get_container
 from core.apps.questions.entities.questions import AnswersOut
 from core.apps.questions.exceptions.questions import CreateException
 from core.apps.questions.services.attempts import BaseAttemptService, ORMAttemptService
@@ -34,7 +35,8 @@ def get_test_list_handler(
     filters: Query[TestFilters],
     pagination_in: Query[PaginationIn],
 ) -> ApiResponse:
-    service: BaseTestService = ORMTestService()
+    container = get_container()
+    service = container.resolve(BaseTestService)
     test_list = service.get_test_list(
         filters=filters, pagination=pagination_in)
     test_count = service.get_test_count(filters=filters)
@@ -50,7 +52,8 @@ def get_test_list_handler(
 
 @router.get('/{test_id}', response=ApiResponse)
 def get_test_handler(request, test_id: int) -> ApiResponse:
-    service: BaseQuestionService = ORMQuestionService()
+    container = get_container()
+    service = container.resolve(BaseQuestionService)
     question_list = service.get_question_list(test_id=test_id)
     items = [QuestionSchemaOut.from_entity(obj) for obj in question_list]
 
@@ -63,7 +66,8 @@ def create_test_handler(
     schema: TestSchemaIn,
 ) -> ApiResponse:
     try:
-        service: BaseTestService = ORMTestService()
+        container = get_container()
+        service = container.resolve(BaseTestService)
         test = service.create_test(data=schema)
 
         return ApiResponse(data=TestSchemaOut.from_entity(test))
@@ -77,8 +81,9 @@ def check_test_handler(
     schema: AttemptSchemaIn,
 ) -> ApiResponse:
     try:
-        test_service: BaseTestService = ORMTestService()
-        question_service: BaseQuestionService = ORMQuestionService()
+        container = get_container()
+        test_service = container.resolve(BaseTestService)
+        question_service = container.resolve(BaseQuestionService)
 
         questions = question_service.get_question_list(test_id=schema.test_id)
         user_answers, correct_answers, total_score = test_service.check_test(
@@ -119,7 +124,8 @@ def create_attempt_handler(
     request,
     schema: AttemptSchemaIn,
 ) -> ApiResponse:
-    service: BaseAttemptService = ORMAttemptService()
+    container = get_container()
+    service = container.resolve(BaseAttemptService)
     attempt = service.create_attempt(
         user_access_token=request.META['HTTP_AUTHORIZATION'],
         test_id=schema.test_id,
@@ -133,7 +139,8 @@ def update_attempt_handler(
     request,
     schema: AttemptUpdateSchema,
 ) -> ApiResponse:
-    service: BaseAttemptService = ORMAttemptService()
+    container = get_container()
+    service = container.resolve(BaseAttemptService)
     attempt = service.update_attempt(
         user_access_token=request.META['HTTP_AUTHORIZATION'],
         test_id=schema.test_id,
@@ -145,7 +152,8 @@ def update_attempt_handler(
 
 @router.get('/{test_id}/attempts', response=ApiResponse)
 def get_attempt_handler(request, test_id: int) -> ApiResponse:
-    service: BaseAttemptService = ORMAttemptService()
+    container = get_container()
+    service = container.resolve(BaseAttemptService)
     attempt_list = service.get_attempt_list(test_id=test_id)
     items = [AttemptSchemaOut.from_entity(obj) for obj in attempt_list]
 

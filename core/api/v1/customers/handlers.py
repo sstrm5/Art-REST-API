@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 from core.api.v1.questions.schemas import CheckUserExistenceIn, CheckUserExistenceOut
+from core.apps.questions.containers import get_container
 from ninja import Router
 from ninja.errors import HttpError
 
@@ -13,10 +14,8 @@ from core.api.v1.customers.schemas import (
     TokenOutSchema,
 )
 from core.apps.common.exceptions import ServiceException
-from core.apps.customers.services.auth import AuthService
-from core.apps.customers.services.codes import DjangoCacheCodeService
-from core.apps.customers.services.customers import BaseCustomerService, ORMCustomerService
-from core.apps.customers.services.senders import MailSenderService
+from core.apps.customers.services.auth import BaseAuthService
+from core.apps.customers.services.customers import BaseCustomerService
 
 
 router = Router(tags=['Customers'])
@@ -24,11 +23,8 @@ router = Router(tags=['Customers'])
 
 @router.post('create_and_auth', response=ApiResponse, operation_id='create_and_authorize')
 def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema) -> ApiResponse:
-    service = AuthService(
-        customer_service=ORMCustomerService(),
-        codes_service=DjangoCacheCodeService(),
-        sender_service=MailSenderService(),
-    )
+    container = get_container()
+    service = container.resolve(BaseAuthService)
     service.create_and_authorize(
         email=schema.email,
         first_name=schema.first_name,
@@ -40,11 +36,8 @@ def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema)
 
 @router.post('get_and_auth', response=ApiResponse, operation_id='get_and_authorize')
 def get_and_auth_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> ApiResponse:
-    service = AuthService(
-        customer_service=ORMCustomerService(),
-        codes_service=DjangoCacheCodeService(),
-        sender_service=MailSenderService(),
-    )
+    container = get_container()
+    service = container.resolve(BaseAuthService)
     service.get_and_authorize(
         email=schema.email,
     )
@@ -54,11 +47,8 @@ def get_and_auth_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> Ap
 
 @router.post('confirm', response=ApiResponse, operation_id='confirm')
 def get_token_handler(request: HttpRequest, schema: TokenInSchema) -> ApiResponse:
-    service = AuthService(
-        customer_service=ORMCustomerService(),
-        codes_service=DjangoCacheCodeService(),
-        sender_service=MailSenderService(),
-    )
+    container = get_container()
+    service = container.resolve(BaseAuthService)
     try:
         access_token, refresh_token, expires_in = service.confirm(
             email=schema.email, code=schema.code,)
@@ -71,7 +61,8 @@ def get_token_handler(request: HttpRequest, schema: TokenInSchema) -> ApiRespons
 
 @router.post('refresh', response=ApiResponse, operation_id='refresh')
 def refresh_token_handler(request: HttpRequest, schema: RefreshInSchema) -> ApiResponse:
-    service = ORMCustomerService()
+    container = get_container()
+    service = container.resolve(BaseCustomerService)
     try:
         access_token, refresh_token, expires_in = service.refresh_token(
             refresh_token=schema.refresh_token)
@@ -88,7 +79,8 @@ def check_user_existence_handler(
     schema: CheckUserExistenceIn,
 ) -> ApiResponse:
     try:
-        customer_service: BaseCustomerService = ORMCustomerService()
+        container = get_container()
+        customer_service = container.resolve(BaseCustomerService)
         is_user_exists = customer_service.check_user_existence(
             email=schema.email)
 
