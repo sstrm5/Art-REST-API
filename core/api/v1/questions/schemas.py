@@ -23,6 +23,7 @@ class TestSchemaOut(Schema):
     subject: TTestItem | dict
     work_time: int
     question_count: int
+    picture: str
     created_at: datetime
     updated_at: datetime | None = None
 
@@ -35,6 +36,7 @@ class TestSchemaOut(Schema):
             subject=entity.subject,
             work_time=entity.work_time,
             question_count=entity.question_count,
+            picture=entity.picture,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )
@@ -47,6 +49,7 @@ class QuestionSchemaOut(Schema):
     answers: dict[str, bool]  # dict of answer_text: is_correct pairs
     description: str
     subject: str
+    picture: str
     created_at: datetime
     updated_at: datetime | None = None
 
@@ -60,6 +63,7 @@ class QuestionSchemaOut(Schema):
             description=entity.description,
             subject=entity.subject,
             weight=entity.weight,
+            picture=entity.picture,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

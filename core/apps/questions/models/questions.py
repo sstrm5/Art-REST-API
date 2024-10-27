@@ -5,6 +5,7 @@ from core.apps.common.models import TimedBaseModel
 from core.apps.questions.entities.questions import Question as QuestionEntity, Test as TestEntity
 from .subjects import Subject
 
+
 class Test(TimedBaseModel):
     title = models.CharField(
         verbose_name='Название теста',
@@ -30,11 +31,16 @@ class Test(TimedBaseModel):
         verbose_name='Описание теста',
         blank=True,
     )
+    picture = models.ImageField(
+        verbose_name='Изображение теста',
+        blank=True,
+        null=True,
+        upload_to='questions/tests_pictures',
+    )
     is_visible = models.BooleanField(
         verbose_name='Виден ли тест в списке',
         default=True,
     )
-
 
     class Meta:
         verbose_name = 'Тест'
@@ -48,11 +54,10 @@ class Test(TimedBaseModel):
             subject=self.subject.__str__(),
             work_time=self.work_time,
             question_count=self.question_count,
+            picture=self.picture.url if self.picture else '',
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
-    
-    
 
     def __str__(self) -> str:
         return self.title
@@ -78,7 +83,8 @@ class Question(TimedBaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        limit_choices_to={'is_visible': True},  # Filter choices to only visible subjects.  # Add this line if you want to restrict choices to visible subjects.  # This is not a recommended practice. It's better to use a separate model for subjects.
+        # Filter choices to only visible subjects.  # Add this line if you want to restrict choices to visible subjects.  # This is not a recommended practice. It's better to use a separate model for subjects.
+        limit_choices_to={'is_visible': True},
     )
     description = models.TextField(
         verbose_name='Описание вопроса',
@@ -87,6 +93,12 @@ class Question(TimedBaseModel):
     weight = models.PositiveIntegerField(
         verbose_name='Вес вопроса',
         default=1,
+    )
+    picture = models.ImageField(
+        verbose_name='Изображение вопроса',
+        blank=True,
+        null=True,
+        upload_to='questions/questions_pictures',
     )
     is_visible = models.BooleanField(
         verbose_name='Виден ли вопрос в списке',
@@ -106,14 +118,14 @@ class Question(TimedBaseModel):
             description=self.description,
             subject=self.subject.__str__(),
             weight=self.weight,
+            picture=self.picture.url if self.picture else '',
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
 
     def __str__(self) -> str:
         return self.title
-        
-    
+
     class Meta:
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
@@ -135,10 +147,9 @@ class Answer(TimedBaseModel):
         default=False,
     )
 
-
     def __str__(self) -> str:
         return self.text
-    
+
     class Meta:
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'

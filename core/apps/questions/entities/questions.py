@@ -11,6 +11,7 @@ class Question:
     description: str
     subject: str
     weight: int
+    picture: str
     created_at: datetime
     updated_at: datetime
 
@@ -23,6 +24,7 @@ class Test:
     subject: str
     work_time: int
     question_count: int
+    picture: str
     created_at: datetime
     updated_at: datetime
 
