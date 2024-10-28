@@ -119,7 +119,17 @@ class ORMTestService(BaseTestService):
         attempt_number = AttemptModel.objects.filter(
             user=user, test=test).count()
 
-        correct_answers = {}
+        # [
+        #     {
+        #         'id': "0",
+        #         'text': "Messi"
+        #     },
+        #     {
+        #         'id': "1",
+        #         'text': "Ronaldo"
+        #     }
+        # ]
+        correct_answers = {"Messi": True}
         for question_number, question in enumerate(questions, 1):
             correct_question_answers = []
             for answer_index, answer_is_correct in enumerate(question.answers.values()):

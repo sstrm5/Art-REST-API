@@ -106,14 +106,20 @@ class Question(TimedBaseModel):
     )
 
     @property
-    def answers_dict(self) -> dict:
-        return {answer.text: answer.is_correct for answer in self.answers.all()}
+    def answers_lict(self) -> dict:
+        answers = []
+        for answer in self.answers.all():
+            answers.append({
+                'id': str(answer.id),
+                'text': answer.text,
+            })
+        return answers
 
     def to_entity(self) -> QuestionEntity:
         return QuestionEntity(
             id=self.id,
             title=self.title,
-            answers=self.answers_dict,
+            answers=self.answers_lict,
             test_id=self.test.pk,
             description=self.description,
             subject=self.subject.__str__(),
@@ -132,6 +138,7 @@ class Question(TimedBaseModel):
 
 
 class Answer(TimedBaseModel):
+
     question = models.ForeignKey(
         Question,
         verbose_name='Вопрос',

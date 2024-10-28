@@ -1,8 +1,6 @@
-from dataclasses import Field
 from datetime import datetime
 from typing import Generic, TypeVar
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
-from pydantic import BaseModel
 
 from ninja import Schema
 
@@ -46,7 +44,8 @@ class QuestionSchemaOut(Schema):
     id: int
     test_id: int
     title: str
-    answers: dict[str, bool]  # dict of answer_text: is_correct pairs
+    # dict of answer_index: answer_text pairs
+    answers: list[dict[str, str]]
     description: str
     subject: str
     picture: str

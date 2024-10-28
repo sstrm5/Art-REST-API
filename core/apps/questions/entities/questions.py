@@ -7,7 +7,8 @@ class Question:
     id: int
     test_id: int
     title: str
-    answers: dict[str, bool]  # dict of answer_text: is_correct pairs
+    # dict of answer_index: answer_text pairs
+    answers: list[dict[str, str]]
     description: str
     subject: str
     weight: int
