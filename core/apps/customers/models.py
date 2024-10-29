@@ -1,3 +1,4 @@
+import time
 from uuid import uuid4
 from django.db import models
 
@@ -6,6 +7,12 @@ from core.apps.customers.entities import CustomerEntity
 
 
 class Customer(TimedBaseModel):
+    def get_expires_in():
+        return int(time.time()) + 3600
+
+    def get_refresh_expires_in():
+        return int(time.time()) + 1209600
+
     email = models.CharField(
         verbose_name='Почта пользователя',
         unique=True,
@@ -38,12 +45,12 @@ class Customer(TimedBaseModel):
 
     expires_in = models.BigIntegerField(
         verbose_name='Время до истечения access token',
-        default=0,
+        default=get_expires_in,
     )
 
     refresh_expires_in = models.BigIntegerField(
         verbose_name='Время до истечения refresh token',
-        default=0,
+        default=get_refresh_expires_in,
     )
 
     def __str__(self) -> str:
