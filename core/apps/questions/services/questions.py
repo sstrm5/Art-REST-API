@@ -7,7 +7,7 @@ from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
 from core.api.v1.questions.schemas import TestSchemaIn
 from core.apps.customers.models import Customer as CustomerModel
-from core.apps.questions.entities.questions import Test, Question, AnswersIn
+from core.apps.questions.entities.questions import Test, Question
 from core.apps.questions.models.attempts import Attempt as AttemptModel
 from core.apps.questions.models.questions import (
     Test as TestModel,
@@ -17,8 +17,6 @@ from core.apps.questions.models.questions import (
 from core.apps.questions.models.subjects import Subject
 from core.apps.questions.exceptions.questions import (
     SubjectException,
-    QuestionException,
-    CreateException,
 )
 
 
@@ -119,20 +117,10 @@ class ORMTestService(BaseTestService):
         attempt_number = AttemptModel.objects.filter(
             user=user, test=test).count()
 
-        # [
-        #     {
-        #         'id': "0",
-        #         'text': "Messi"
-        #     },
-        #     {
-        #         'id': "1",
-        #         'text': "Ronaldo"
-        #     }
-        # ]
-        correct_answers = {"Messi": True}
+        correct_answers = {}
         for question_number, question in enumerate(questions, 1):
             correct_question_answers = []
-            for answer_index, answer_is_correct in enumerate(question.answers.values()):
+            for answer_index, answer_is_correct in enumerate(question.answers_dict.values()):
                 if answer_is_correct:
                     correct_question_answers.append(answer_index)
             correct_answers[str(question_number)] = correct_question_answers

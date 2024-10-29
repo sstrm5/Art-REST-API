@@ -67,6 +67,8 @@ class ORMAttemptService(BaseAttemptService):
             user=customer,
             test=test,
             attempt_number=attempt_number)
+        if not user_answers:
+            return attempt.to_entity()
         attempt.user_answers = user_answers
         attempt.save()
 

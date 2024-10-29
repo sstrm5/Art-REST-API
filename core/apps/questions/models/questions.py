@@ -106,7 +106,11 @@ class Question(TimedBaseModel):
     )
 
     @property
-    def answers_lict(self) -> dict:
+    def answers_dict(self) -> dict:
+        return {answer.text: answer.is_correct for answer in self.answers.all()}
+
+    @property
+    def answers_list(self) -> list:
         answers = []
         for answer in self.answers.all():
             answers.append({
@@ -119,7 +123,8 @@ class Question(TimedBaseModel):
         return QuestionEntity(
             id=self.id,
             title=self.title,
-            answers=self.answers_lict,
+            answers=self.answers_list,
+            answers_dict=self.answers_dict,
             test_id=self.test.pk,
             description=self.description,
             subject=self.subject.__str__(),

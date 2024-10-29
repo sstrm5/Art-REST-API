@@ -9,6 +9,7 @@ class Question:
     title: str
     # dict of answer_index: answer_text pairs
     answers: list[dict[str, str]]
+    answers_dict: dict[str, bool]
     description: str
     subject: str
     weight: int
@@ -28,16 +29,3 @@ class Test:
     picture: str
     created_at: datetime
     updated_at: datetime
-
-
-@dataclass
-class AnswersIn:
-    test_id: int
-
-
-@dataclass
-class AnswersOut:
-    test_id: int
-    user_answers: dict[int, int]
-    correct_answers: dict[int, list[int]]
-    total_score: int

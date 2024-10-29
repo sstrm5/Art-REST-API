@@ -4,9 +4,8 @@ from core.api.v1.questions.filters import (
     TestFilters,
 )
 from core.apps.questions.containers import get_container
-from core.apps.questions.entities.questions import AnswersOut
 from core.apps.questions.exceptions.questions import CreateException
-from core.apps.questions.services.attempts import BaseAttemptService, ORMAttemptService
+from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import (
     BaseTestService,
     BaseQuestionService,
@@ -17,6 +16,7 @@ from ninja import Query, Router
 from ninja.errors import HttpError
 from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
 from core.api.v1.questions.schemas import (
+    AnswersOut,
     AttemptSchemaIn,
     AttemptSchemaOut,
     AttemptUpdateSchema,
