@@ -122,7 +122,7 @@ class ORMTestService(BaseTestService):
             correct_question_answers = []
             for answer_index, answer_is_correct in enumerate(question.answers_dict.values()):
                 if answer_is_correct:
-                    correct_question_answers.append(answer_index)
+                    correct_question_answers.append(str(answer_index))
             correct_answers[str(question_number)] = correct_question_answers
 
         user_answers = AttemptModel.objects.get(

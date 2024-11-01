@@ -57,7 +57,7 @@ class ORMAttemptService(BaseAttemptService):
 
         return attempt.to_entity()
 
-    def update_attempt(self, user_access_token: str, test_id: int, user_answers: dict[str, list[int]]):
+    def update_attempt(self, user_access_token: str, test_id: int, user_answers: dict[str, list[str]]):
         customer = CustomerModel.objects.get(access_token=user_access_token)
         test = TestModel.objects.get(id=test_id)
         # номер последней попытки = кол-во попыток пользователя пройти тест
