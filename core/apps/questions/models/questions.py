@@ -112,9 +112,9 @@ class Question(TimedBaseModel):
     @property
     def answers_list(self) -> list:
         answers = []
-        for answer in self.answers.all():
+        for answer_index, answer in enumerate(self.answers.all(), 1):
             answers.append({
-                'id': str(answer.id),
+                'id': str(answer_index),
                 'text': answer.text,
             })
         return answers
