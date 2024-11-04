@@ -121,7 +121,7 @@ class AttemptUpdateSchema(Schema):
 
 class AttemptSchemaOut(Schema):
     test_id: int
-    user_answers: dict[int, list[str]]
+    user_answers: dict[str, list[str]]
     created_at: datetime
 
     def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
@@ -138,6 +138,6 @@ class AnswersIn(Schema):
 
 class AnswersOut(Schema):
     test_id: int
-    user_answers: dict[int, list[int]]
-    correct_answers: dict[int, list[int]]
+    user_answers: dict[str, list[str]]
+    correct_answers: dict[str, list[str]]
     total_score: int

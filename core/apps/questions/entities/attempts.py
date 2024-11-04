@@ -9,7 +9,7 @@ class Attempt:
     user_id: int
     test_id: int
     end_time: datetime
-    user_answers: dict[int, Iterable]
+    user_answers: dict[str, Iterable]
     total_score: int
     created_at: datetime
     updated_at: datetime

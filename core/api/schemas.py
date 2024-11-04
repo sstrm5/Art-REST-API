@@ -19,6 +19,11 @@ class ListResponse(BaseModel, Generic[TListItem]):
     items: list[TListItem]
 
 
+class TestListResponse(BaseModel, Generic[TListItem]):
+    items: list[TListItem]
+    duration: int
+
+
 class ListPaginatedResponse(BaseModel, Generic[TListItem]):
     items: list[TListItem]
     pagination: PaginationOut

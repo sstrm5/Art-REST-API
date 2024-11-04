@@ -14,7 +14,7 @@ from core.apps.questions.services.questions import (
 )
 from ninja import Query, Router
 from ninja.errors import HttpError
-from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
+from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse, TestListResponse
 from core.api.v1.questions.schemas import (
     AnswersOut,
     AttemptSchemaIn,
@@ -53,11 +53,14 @@ def get_test_list_handler(
 @router.get('/{test_id}', response=ApiResponse)
 def get_test_handler(request, test_id: int) -> ApiResponse:
     container = get_container()
-    service = container.resolve(BaseQuestionService)
-    question_list = service.get_question_list(test_id=test_id)
+    question_service = container.resolve(BaseQuestionService)
+    test_service = container.resolve(BaseTestService)
+
+    question_list = question_service.get_question_list(test_id=test_id)
+    duration = test_service.get_test_duration(test_id=test_id)
     items = [QuestionSchemaOut.from_entity(obj) for obj in question_list]
 
-    return ApiResponse(data=ListResponse(items=items))
+    return ApiResponse(data=TestListResponse(items=items, duration=duration))
 
 
 @router.post('/create/new_test', response=ApiResponse)
@@ -141,6 +144,7 @@ def update_attempt_handler(
 ) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAttemptService)
+
     attempt = service.update_attempt(
         user_access_token=request.META['HTTP_AUTHORIZATION'],
         test_id=schema.test_id,

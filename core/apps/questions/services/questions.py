@@ -120,7 +120,7 @@ class ORMTestService(BaseTestService):
         correct_answers = {}
         for question_number, question in enumerate(questions, 1):
             correct_question_answers = []
-            for answer_index, answer_is_correct in enumerate(question.answers_dict.values()):
+            for answer_index, answer_is_correct in enumerate(question.answers_dict.values(), 1):
                 if answer_is_correct:
                     correct_question_answers.append(str(answer_index))
             correct_answers[str(question_number)] = correct_question_answers
@@ -142,6 +142,10 @@ class ORMTestService(BaseTestService):
             attempt_number=attempt_number).update(total_score=total_score)
 
         return user_answers, correct_answers, total_score
+
+    def get_test_duration(self, test_id: int) -> int:
+        test = TestModel.objects.get(id=test_id)
+        return test.work_time
 
 
 class ORMQuestionService(BaseQuestionService):
