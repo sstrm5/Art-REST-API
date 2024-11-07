@@ -9,12 +9,10 @@ from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import (
     BaseTestService,
     BaseQuestionService,
-    ORMTestService,
-    ORMQuestionService,
 )
 from ninja import Query, Router
 from ninja.errors import HttpError
-from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse, TestListResponse
+from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
 from core.api.v1.questions.schemas import (
     AnswersOut,
     AttemptSchemaIn,
@@ -60,7 +58,7 @@ def get_test_handler(request, test_id: int) -> ApiResponse:
     duration = test_service.get_test_duration(test_id=test_id)
     items = [QuestionSchemaOut.from_entity(obj) for obj in question_list]
 
-    return ApiResponse(data=TestListResponse(items=items, duration=duration))
+    return ApiResponse(data=ListResponse(items=items), meta={'duration': duration})
 
 
 @router.post('/create/new_test', response=ApiResponse)
@@ -104,23 +102,6 @@ def check_test_handler(
     except Exception as exception:
         raise HttpError(status_code=400, message=exception.message)
 
-
-# @router.post('/create/new_attempt', response=ApiResponse)
-# def create_attempt_handler(
-#     request,
-#     schema: AttemptSchemaIn,
-# ) -> ApiResponse:
-#     service: BaseAttemptService = ORMAttemptService()
-#     attempt = service.create_attempt(
-#         user_id=schema.user_id,
-#         test_id=schema.test_id,
-#         start_time=schema.start_time,
-#         end_time=schema.end_time,
-#         user_answers=schema.user_answers,
-#         total_score=schema.total_score,
-#     )
-
-#     return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
 
 @router.post('/create/new_attempt', response=ApiResponse)
 def create_attempt_handler(
