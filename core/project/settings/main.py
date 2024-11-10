@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     # third party
     "corsheaders",
+    'nested_admin',
 ]
 
 MIDDLEWARE = [
