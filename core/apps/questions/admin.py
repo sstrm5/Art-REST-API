@@ -33,13 +33,6 @@ class ProductAdmin5(admin.ModelAdmin):
 
 
 # Or StackedInline for a different layout
-class AnswerInline(nested_admin.NestedTabularInline):
-    model = Answer
-    extra = 1  # Number of empty answer forms to display
-    show_change_link = True
-
-
-class QuestionInline(nested_admin.NestedTabularInline):
     model = Question
     extra = 1
     show_change_link = True
