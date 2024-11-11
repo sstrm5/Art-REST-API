@@ -1,4 +1,6 @@
 version: '3.9'
+networks:
+  dev:
 
 services:
   main-app:
@@ -15,3 +17,5 @@ services:
      - postgres
     volumes:
       - ..:/app/
+    networks:
+      - dev
