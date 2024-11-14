@@ -8,6 +8,9 @@ APP_FILE = docker_compose/app.yaml
 APP_CONTAINER = main-app
 MANAGE_PY = python manage.py
 USER = -U postgres
+MAKE_APP = ${DC} -f ${APP_FILE} -f ${STORAGES_FILE} ${ENV} up --build -d
+MAKE_APP_DOWN = ${DC} -f ${APP_FILE} -f ${STORAGES_FILE} down
+MAKE_APP_LOGS = ${LOGS} ${APP_CONTAINER} -f
 
 .PHONY: storages
 storages:
@@ -52,3 +55,8 @@ superuser:
 .PHONY: collectstatic
 collectstatic:
 	${EXEC} ${APP_CONTAINER} ${MANAGE_PY} collectstatic
+
+
+.PHONY: app-relaod
+app-reload:
+	${MAKE_APP_DOWN} && ${MAKE_APP} && ${MAKE_APP_LOGS}
