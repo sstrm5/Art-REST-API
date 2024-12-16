@@ -49,5 +49,5 @@ class QuestionInline(nested_admin.NestedTabularInline):
 @admin.register(Test)
 class ProductAdmin1(nested_admin.NestedModelAdmin):
     list_display = ('id', 'title', 'subject', 'created_at',
-                    'question_count', 'description', 'is_visible')
+                    'description', 'is_visible')
     inlines = (QuestionInline,)

@@ -20,12 +20,9 @@ class Test(TimedBaseModel):
         on_delete=models.CASCADE,
         related_name='tests',
     )
-    work_time = models.IntegerField(
+    work_time = models.PositiveIntegerField(
         verbose_name='Время выполнения (мин)',
         blank=True,
-    )
-    question_count = models.IntegerField(
-        verbose_name='Количество вопросов в тесте',
     )
     description = models.TextField(
         verbose_name='Описание теста',
@@ -53,7 +50,7 @@ class Test(TimedBaseModel):
             description=self.description,
             subject=self.subject.__str__(),
             work_time=self.work_time,
-            question_count=self.question_count,
+            question_count=len(self.test.all()),
             picture=self.picture.url if self.picture else '',
             created_at=self.created_at,
             updated_at=self.updated_at,
@@ -71,7 +68,8 @@ class Question(TimedBaseModel):
         Test,
         verbose_name='Тест',
         on_delete=models.CASCADE,
-        blank=True
+        blank=True,
+        related_name='test'
     )
     title = models.CharField(
         verbose_name='Заголовок вопроса',
