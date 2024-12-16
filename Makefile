@@ -1,11 +1,11 @@
 DC = docker compose
 STORAGES_FILE = docker_compose/storages.yaml
 EXEC = docker exec -it
-DB_CONTAINER = example-db
+DB_CONTAINER = postgres_db
 LOGS = docker logs
 ENV = --env-file .env
 APP_FILE = docker_compose/app.yaml
-APP_CONTAINER = main-app
+APP_CONTAINER = django
 MANAGE_PY = python manage.py
 USER = -U postgres
 MAKE_APP = ${DC} -f ${APP_FILE} -f ${STORAGES_FILE} ${ENV} up --build -d

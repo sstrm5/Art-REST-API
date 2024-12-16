@@ -29,6 +29,7 @@
 
 # Запуск Django-приложения
 # python manage.py runserver 0.0.0.0:8000
-gunicorn core.project.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --timeout 30
-gunicorn --log-file=- onbytes.wsgi:application
-python manage.py collectstatic
+python manage.py collectstatic --no-input
+# gunicorn core.project.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 2 --timeout 30
+# gunicorn --log-file=- onbytes.wsgi:application
+python manage.py runserver 0.0.0.0:8000

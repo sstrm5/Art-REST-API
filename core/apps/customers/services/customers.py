@@ -28,12 +28,11 @@ class ORMCustomerService(BaseCustomerService):
             first_name=first_name,
             last_name=last_name,
         )
-
+        
         return customer.to_entity()
 
     def get(self, email: str) -> CustomerEntity:
         customer = Customer.objects.get(email=email)
-
         return customer.to_entity()
 
     def check_user_existence(self, email: str):

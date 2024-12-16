@@ -4,6 +4,7 @@ from django.db import models
 
 from core.apps.common.models import TimedBaseModel
 from core.apps.customers.entities import CustomerEntity
+from core.apps.questions.models.questions import Test
 
 
 class Customer(TimedBaseModel):
@@ -53,6 +54,35 @@ class Customer(TimedBaseModel):
         default=get_refresh_expires_in,
     )
 
+    picture = models.ImageField(
+        verbose_name='Изображение профиля',
+        upload_to='customers/pofile_pictures',
+        blank=True,
+        null=True,
+    )
+
+    completed_tests = models.ManyToManyField(
+        Test,
+        verbose_name='Завершенные тесты',
+        blank=True,
+        related_name='customers',
+    )
+
+    in_process = models.BooleanField(
+        verbose_name='В процессе прохождения теста',
+        default=False,
+    )
+
+    role = models.CharField(
+        verbose_name='Роль пользователя',
+        max_length=50,
+        choices=(
+            ('CUSTOMER', 'Пользователь'),
+            ('ADMIN', 'Администратор'),
+        ),
+        default='CUSTOMER',
+    )
+
     def __str__(self) -> str:
         return self.email
 
@@ -61,6 +91,11 @@ class Customer(TimedBaseModel):
             email=self.email,
             first_name=self.first_name,
             last_name=self.last_name,
+            picture=self.picture if self.picture else '',
+            completed_tests=[test.to_entity()
+                             for test in self.completed_tests.all()],
+            in_process=self.in_process,
+            role=self.role,
             created_at=self.created_at,
         )
 

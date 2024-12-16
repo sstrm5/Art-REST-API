@@ -10,6 +10,7 @@ from core.apps.questions.services.questions import (
     BaseTestService,
     BaseQuestionService,
 )
+from core.apps.questions.use_cases import CreateTestUseCase
 from ninja import Query, Router
 from ninja.errors import HttpError
 from core.api.schemas import ApiResponse, ListPaginatedResponse, ListResponse
@@ -18,6 +19,7 @@ from core.api.v1.questions.schemas import (
     AttemptSchemaIn,
     AttemptSchemaOut,
     AttemptUpdateSchema,
+    TestAndQuestionDataSchemaIn,
     TestSchemaIn,
     TestSchemaOut,
     QuestionSchemaOut,
@@ -68,8 +70,18 @@ def create_test_handler(
 ) -> ApiResponse:
     try:
         container = get_container()
-        service = container.resolve(BaseTestService)
-        test = service.create_test(data=schema)
+        data: TestAndQuestionDataSchemaIn = schema.data
+        use_case = CreateTestUseCase(
+            test_service=container.resolve(BaseTestService)
+        )
+
+        test = use_case.execute(
+            subject=data.test_info.subject,
+            title=data.test_info.title,
+            description=data.test_info.description,
+            work_time=data.test_info.work_time,
+            questions=data.questions
+        )
 
         return ApiResponse(data=TestSchemaOut.from_entity(test))
     except CreateException as exception:

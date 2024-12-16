@@ -74,7 +74,6 @@ class TestDataSchemaIn(Schema):
     description: str
     subject: str
     work_time: int
-    question_count: int
 
 
 class QuestionDataSchemaIn(Schema):

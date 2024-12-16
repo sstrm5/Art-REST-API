@@ -5,7 +5,7 @@ from typing import Iterable
 
 from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
-from core.api.v1.questions.schemas import TestSchemaIn
+from core.api.v1.questions.schemas import QuestionDataSchemaIn, TestSchemaIn
 from core.apps.customers.models import Customer as CustomerModel
 from core.apps.questions.entities.questions import Test, Question
 from core.apps.questions.models.attempts import Attempt as AttemptModel
@@ -59,10 +59,20 @@ class ORMTestService(BaseTestService):
     def get_test_count(self, filters: TestFilters) -> int:
         return TestModel.objects.filter(is_visible=True).count()
 
-    def create_test(self, data: TestSchemaIn) -> Test:
+    def create_test(
+            self,
+            subject: str,
+            title: str,
+            description: str,
+            work_time: int,
+            questions: list[QuestionDataSchemaIn],
+    ) -> Test:
+        # test_info: subject, title, description, work_time | questions: list[QuestionDataSchemaIn],
         data = data.data
+
         test_data = data.test_info
         question_list_data = data.questions
+
         try:
             subject = test_data.subject
             subject, _ = Subject.objects.get_or_create(subject=subject)

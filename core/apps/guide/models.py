@@ -34,3 +34,10 @@ class Card(TimedBaseModel):
             text=self.text,
             picture=self.picture.url if self.picture else '',
         )
+
+    def __str__(self) -> str:
+        return self.title
+
+    class Meta:
+        verbose_name = 'Карточка'
+        verbose_name_plural = 'Карточки'

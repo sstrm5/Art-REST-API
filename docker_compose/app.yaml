@@ -4,11 +4,11 @@ networks:
     external: true
 
 services:
-  main-app:
+  django:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: main-app
+    container_name: django
     ports: 
       - "${DJANGO_PORT}:8000"
     command: "sh /entrypoint.sh"
