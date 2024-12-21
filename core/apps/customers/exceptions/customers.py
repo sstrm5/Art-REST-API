@@ -8,7 +8,7 @@ class CustomerException(ServiceException):
     @property
     def message(self):
         return 'Customer error occured'
-    
+
 
 @dataclass(eq=False)
 class RefreshTokenNotFoundException(CustomerException):
@@ -22,3 +22,10 @@ class RefreshTokenExpiredException(CustomerException):
     @property
     def message(self):
         return 'Refresh token is not valid'
+
+
+@dataclass(eq=False)
+class AccessTokenExcpiredException(CustomerException):
+    @property
+    def message(self):
+        return 'Access token is not valid'

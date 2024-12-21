@@ -88,6 +88,7 @@ class Customer(TimedBaseModel):
 
     def to_entity(self) -> CustomerEntity:
         return CustomerEntity(
+            id=self.id,
             email=self.email,
             first_name=self.first_name,
             last_name=self.last_name,

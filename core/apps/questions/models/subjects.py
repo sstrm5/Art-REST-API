@@ -9,7 +9,7 @@ class Subject(TimedBaseModel):
         max_length=255,
     )
     is_visible = models.BooleanField(
-        verbose_name='Виден ли тема в списке',
+        verbose_name='Видна ли тема в списке',
         default=True,
     )
 

@@ -8,6 +8,6 @@ from core.api.v1.guide.handlers import router as guide_router
 
 router = Router(tags=['v1'])
 # router.add_router('products/', product_router)
-router.add_router('tests/', question_router)
 router.add_router('customers/', customer_router)
+router.add_router('tests/', question_router)
 router.add_router('guide/', guide_router)

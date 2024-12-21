@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 import json
+import os
 from typing import Iterable
-
+from core.apps.common.exceptions import ServiceException
+from core.apps.customers.entities import CustomerEntity
+from ninja.files import UploadedFile
 from core.api.v1.questions.filters import TestFilters, QuestionFilters
 from core.api.filters import PaginationIn
 from core.api.v1.questions.schemas import QuestionDataSchemaIn, TestSchemaIn
@@ -17,6 +20,7 @@ from core.apps.questions.models.questions import (
 from core.apps.questions.models.subjects import Subject
 from core.apps.questions.exceptions.questions import (
     SubjectException,
+    TestNotFoundException,
 )
 
 
@@ -66,35 +70,29 @@ class ORMTestService(BaseTestService):
             description: str,
             work_time: int,
             questions: list[QuestionDataSchemaIn],
+            file_path: str,
     ) -> Test:
-        # test_info: subject, title, description, work_time | questions: list[QuestionDataSchemaIn],
-        data = data.data
-
-        test_data = data.test_info
-        question_list_data = data.questions
-
         try:
-            subject = test_data.subject
             subject, _ = Subject.objects.get_or_create(subject=subject)
         except:
             raise SubjectException()
 
         try:
             test = TestModel.objects.create(
-                title=test_data.title,
-                description=test_data.description,
+                title=title,
+                description=description,
                 subject=subject,
-                work_time=test_data.work_time,
-                question_count=len(question_list_data),
+                work_time=work_time,
+                is_visible=True,
+                picture=file_path,
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
-                is_visible=True,
             )
         except Exception:
             raise Exception
 
         try:
-            for question_data in question_list_data:
+            for question_data in questions:
                 question = QuestionModel.objects.create(
                     title=question_data.title,
                     description=question_data.description,
@@ -105,7 +103,7 @@ class ORMTestService(BaseTestService):
                 )
                 answers_dict = question_data.answers
                 for answer_data in answers_dict:
-                    answer = AnswerModel.objects.create(
+                    AnswerModel.objects.create(
                         text=answer_data,
                         is_correct=answers_dict[answer_data],
                         question=question,
@@ -118,17 +116,17 @@ class ORMTestService(BaseTestService):
 
     def check_test(
             self,
-            user_access_token: str,
+            customer: CustomerEntity,
             test_id: int,
-            questions: Iterable[Question],
+            question_list: Iterable[Question],
     ):
-        user = CustomerModel.objects.get(access_token=user_access_token)
+        user = CustomerModel.objects.get(id=customer.id)
         test = TestModel.objects.get(id=test_id)
         attempt_number = AttemptModel.objects.filter(
             user=user, test=test).count()
 
         correct_answers = {}
-        for question_number, question in enumerate(questions, 1):
+        for question_number, question in enumerate(question_list, 1):
             correct_question_answers = []
             for answer_index, answer_is_correct in enumerate(question.answers_dict.values(), 1):
                 if answer_is_correct:
@@ -154,13 +152,29 @@ class ORMTestService(BaseTestService):
         return user_answers, correct_answers, total_score
 
     def get_test_duration(self, test_id: int) -> int:
-        test = TestModel.objects.get(id=test_id)
+        try:
+            test = TestModel.objects.get(id=test_id)
+        except:
+            raise TestNotFoundException()
         return test.work_time
+
+    def add_picture_to_test(self, file: UploadedFile):
+        if not os.path.exists("media/questions/tests_pictures/"):
+            os.makedirs("media/questions/tests_pictures/")
+        file_path = f'questions/tests_pictures/{file.name}'
+        with open(f'media/' + file_path, 'wb') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+        return file_path
 
 
 class ORMQuestionService(BaseQuestionService):
     def get_question_list(self, test_id) -> Iterable[Question]:
-        qs = QuestionModel.objects.filter(is_visible=True, test__id=test_id)
+        try:
+            qs = QuestionModel.objects.filter(
+                is_visible=True, test__id=test_id)
+        except Exception:
+            raise TestNotFoundException()
         return [question.to_entity() for question in qs]
 
     def get_question_count(self, test_id) -> int:

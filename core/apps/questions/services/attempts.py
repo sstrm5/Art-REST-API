@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Iterable
 
+from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.models import Customer as CustomerModel
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
 from core.apps.questions.models.attempts import Attempt as AttemptModel
@@ -12,13 +13,9 @@ class BaseAttemptService(ABC):
     @abstractmethod
     def create_attempt(
         self,
-        user_id: int,
+        customer: CustomerEntity,
         test_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        user_answers: dict[int, Iterable],
-        total_score: int,
-    ) -> None:
+    ) -> AttemptEntity:
         ...
 
     @abstractmethod
@@ -29,21 +26,28 @@ class BaseAttemptService(ABC):
 class ORMAttemptService(BaseAttemptService):
     def create_attempt(
         self,
-        user_access_token: str,
+        customer: CustomerEntity,
         test_id: int,
     ) -> AttemptEntity:
-        customer = CustomerModel.objects.get(access_token=user_access_token)
         test = TestModel.objects.get(id=test_id)
+
+        customer = CustomerModel.objects.get(id=customer.id)
+
         # номер последней попытки = кол-во попыток пользователя пройти тест
         attempt_number = AttemptModel.objects.filter(
             user=customer, test=test).count()
+
         # проверка наличия попытки для этого пользователя и теста
         if attempt_number:
             attempt_number += 1
         else:
             attempt_number = 1
+
+        # время начала и конца попытки
         current_time = datetime.now()
         end_time = current_time + timedelta(seconds=(test.work_time * 60))
+
+        # создание "пустой" попытки в БД
         attempt = AttemptModel.objects.create(
             user=customer,
             test=test,
@@ -57,8 +61,8 @@ class ORMAttemptService(BaseAttemptService):
 
         return attempt.to_entity()
 
-    def update_attempt(self, user_access_token: str, test_id: int, user_answers: dict[str, list[str]]):
-        customer = CustomerModel.objects.get(access_token=user_access_token)
+    def update_attempt(self, token: str, test_id: int, user_answers: dict[str, list[str]]):
+        customer = CustomerModel.objects.get(access_token=token)
         test = TestModel.objects.get(id=test_id)
         # номер последней попытки = кол-во попыток пользователя пройти тест
         attempt_number = AttemptModel.objects.filter(

@@ -4,6 +4,7 @@ import datetime
 
 @dataclass
 class CustomerEntity:
+    id: int
     email: str
     first_name: str
     last_name: str

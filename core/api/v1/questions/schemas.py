@@ -69,7 +69,6 @@ class QuestionSchemaOut(Schema):
 
 
 class TestDataSchemaIn(Schema):
-    id: int
     title: str
     description: str
     subject: str
@@ -77,8 +76,6 @@ class TestDataSchemaIn(Schema):
 
 
 class QuestionDataSchemaIn(Schema):
-    id: int
-    test_id: int
     title: str
     answers: dict[str, bool]  # dict of answer_text: is_correct pairs
     description: str
@@ -121,14 +118,21 @@ class AttemptUpdateSchema(Schema):
 class AttemptSchemaOut(Schema):
     test_id: int
     user_answers: dict[str, list[str]]
+    total_score: int
     created_at: datetime
 
     def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
         return AttemptSchemaOut(
             test_id=entity.test_id,
             user_answers=entity.user_answers,
+            total_score=entity.total_score,
             created_at=entity.created_at,
         )
+
+
+class AttemptSchemaOutWithName(Schema):
+    attempt_info: AttemptSchemaOut
+    user_name: str
 
 
 class AnswersIn(Schema):

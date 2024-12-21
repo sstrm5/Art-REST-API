@@ -6,10 +6,10 @@ from core.apps.guide import containers
 from core.apps.guide.services.guide import BaseCardService
 
 
-router = router.Router(tags=['Guide cards'])
+router = router.Router(tags=['Guide cards📕'])
 
 
-@router.get('', response=ApiResponse)
+@router.get('', response=ApiResponse[ListResponse[GuideSchema]], summary='Получить список карточек📜')
 def list_guide_cards_handler(request):
     container = containers.get_container()
     card_service = container.resolve(BaseCardService)

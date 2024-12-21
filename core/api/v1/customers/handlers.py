@@ -18,10 +18,10 @@ from core.apps.customers.services.auth import BaseAuthService
 from core.apps.customers.services.customers import BaseCustomerService
 
 
-router = Router(tags=['Customers'])
+router = Router(tags=['Customers👨‍💻'])
 
 
-@router.post('create_and_auth', response=ApiResponse, operation_id='create_and_authorize')
+@router.post('create_and_auth', response=ApiResponse[AuthOutSchema], operation_id='create_and_authorize', summary='Создать пользователя и отправить код✉️')
 def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
@@ -34,7 +34,7 @@ def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema)
     return ApiResponse(data=AuthOutSchema(message=f'Code sent to: {schema.email}'))
 
 
-@router.post('get_and_auth', response=ApiResponse, operation_id='get_and_authorize')
+@router.post('get_and_auth', response=ApiResponse[AuthOutSchema], operation_id='get_and_authorize', summary='Получить пользователя и отправить код✉️')
 def get_and_auth_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
@@ -45,7 +45,7 @@ def get_and_auth_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> Ap
     return ApiResponse(data=AuthOutSchema(message=f'Code sent to: {schema.email}'))
 
 
-@router.post('confirm', response=ApiResponse, operation_id='confirm')
+@router.post('confirm', response=ApiResponse[TokenOutSchema], operation_id='confirm', summary='Проверить код и получить токены✅')
 def get_token_handler(request: HttpRequest, schema: TokenInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
@@ -59,7 +59,7 @@ def get_token_handler(request: HttpRequest, schema: TokenInSchema) -> ApiRespons
     return ApiResponse(data=TokenOutSchema(access_token=access_token, refresh_token=refresh_token, expires_in=expires_in))
 
 
-@router.post('refresh', response=ApiResponse, operation_id='refresh')
+@router.post('refresh', response=ApiResponse[TokenOutSchema], operation_id='refresh', summary='Обновить токены*️⃣')
 def refresh_token_handler(request: HttpRequest, schema: RefreshInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseCustomerService)
@@ -73,7 +73,7 @@ def refresh_token_handler(request: HttpRequest, schema: RefreshInSchema) -> ApiR
     return ApiResponse(data=TokenOutSchema(access_token=access_token, refresh_token=refresh_token, expires_in=expires_in))
 
 
-@router.post('/check/user_existence', response=ApiResponse)
+@router.post('/check/user_existence', response=ApiResponse[CheckUserExistenceOut], summary='Проверить существование пользователя🧙‍♂️')
 def check_user_existence_handler(
     request,
     schema: CheckUserExistenceIn,

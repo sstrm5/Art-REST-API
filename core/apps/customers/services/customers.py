@@ -3,7 +3,7 @@ import time
 from uuid import uuid4
 
 from core.apps.customers.entities import CustomerEntity
-from core.apps.customers.exceptions.customers import RefreshTokenExpiredException, RefreshTokenNotFoundException
+from core.apps.customers.exceptions.customers import AccessTokenExcpiredException, RefreshTokenExpiredException, RefreshTokenNotFoundException
 from core.apps.customers.models import Customer
 
 
@@ -13,7 +13,7 @@ class BaseCustomerService(ABC):
         ...
 
     @abstractmethod
-    def get(self, email: str) -> CustomerEntity:
+    def get_by_email(self, email: str) -> CustomerEntity:
         ...
 
     @abstractmethod
@@ -28,11 +28,23 @@ class ORMCustomerService(BaseCustomerService):
             first_name=first_name,
             last_name=last_name,
         )
-        
+
         return customer.to_entity()
 
-    def get(self, email: str) -> CustomerEntity:
+    def get_by_email(self, email: str) -> CustomerEntity:
         customer = Customer.objects.get(email=email)
+        return customer.to_entity()
+
+    def get_by_token(self, token: str) -> CustomerEntity:
+        customer = Customer.objects.filter(access_token=token).first()
+        if customer:
+            current_time = int(time.time())
+            if current_time < customer.expires_in:
+                return customer.to_entity()
+        raise AccessTokenExcpiredException()
+
+    def get_by_id(self, user_id: int) -> CustomerEntity:
+        customer = Customer.objects.get(id=user_id)
         return customer.to_entity()
 
     def check_user_existence(self, email: str):
@@ -73,3 +85,8 @@ class ORMCustomerService(BaseCustomerService):
                 raise RefreshTokenExpiredException()
         else:
             raise RefreshTokenNotFoundException()
+
+    def change_status(self, customer: CustomerEntity, in_process: bool):
+        Customer.objects.filter(email=customer.email).update(
+            in_process=in_process)
+        return customer.in_process
