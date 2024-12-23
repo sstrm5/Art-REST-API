@@ -81,3 +81,7 @@ class ORMAttemptService(BaseAttemptService):
     def get_attempt_list(self, test_id: int) -> list[AttemptEntity]:
         attempts = AttemptModel.objects.filter(test_id=test_id)
         return [attempt.to_entity() for attempt in attempts]
+
+    def get_customer_attempt_list(self, user_id: int):
+        attempts = AttemptModel.objects.filter(user__id=user_id)
+        return [attempt.to_entity() for attempt in attempts]

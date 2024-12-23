@@ -110,3 +110,12 @@ class CreateAttemptUseCase:
         )
         self.customer_service.change_status(customer=customer, in_process=True)
         return attempt
+
+
+@dataclass
+class GetSubjectsUseCase:
+    test_service: BaseTestService
+
+    def execute(self):
+        subjects = self.test_service.get_subjects()
+        return subjects

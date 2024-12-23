@@ -1,6 +1,7 @@
 from django.db import models
 
 from core.apps.common.models import TimedBaseModel
+from core.apps.questions.entities.subjects import Subject as SubjectEntity
 
 
 class Subject(TimedBaseModel):
@@ -19,3 +20,11 @@ class Subject(TimedBaseModel):
 
     def __str__(self) -> str:
         return self.subject
+
+    def to_entity(self) -> SubjectEntity:
+        return SubjectEntity(
+            id=self.id,
+            subject=self.subject,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+        )

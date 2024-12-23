@@ -16,6 +16,7 @@ from core.apps.questions.use_cases import (
     CreateAttemptUseCase,
     CreateTestUseCase,
     GetAttemptListUseCase,
+    GetSubjectsUseCase,
     GetTestUseCase,
 )
 from ninja import Query, Router, Header, File
@@ -142,6 +143,7 @@ def create_attempt_handler(
     schema: AttemptSchemaIn,
     token: str = Header(alias='Auth-Token'),
 ) -> ApiResponse:
+    print(1232131231321312312313123123123)
     container = get_container()
 
     use_case = CreateAttemptUseCase(
@@ -196,6 +198,19 @@ def get_attempt_list_handler(request, test_id: int) -> ApiResponse:
     ) for attempt_entity, user_name in attempt_list]
 
     return ApiResponse(data=ListResponse(items=items))
+
+
+@router.get('/subjects/get', response=ApiResponse[ListResponse])
+def get_subjects_handler(request) -> ApiResponse:
+    container = get_container()
+    use_case = GetSubjectsUseCase(
+        test_service=container.resolve(BaseTestService),
+    )
+    try:
+        subjects = use_case.execute()
+    except ServiceException as exception:
+        raise HttpError(status_code=400, message=exception.message)
+    return ApiResponse(data=ListResponse(items=subjects))
 
 
 @router.get('/hello_world/123')

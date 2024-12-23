@@ -167,6 +167,9 @@ class ORMTestService(BaseTestService):
                 f.write(chunk)
         return file_path
 
+    def get_subjects(self):
+        return [subject.to_entity() for subject in Subject.objects.filter(is_visible=True)]
+
 
 class ORMQuestionService(BaseQuestionService):
     def get_question_list(self, test_id) -> Iterable[Question]:
