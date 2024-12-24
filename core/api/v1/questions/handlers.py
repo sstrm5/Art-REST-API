@@ -143,7 +143,6 @@ def create_attempt_handler(
     schema: AttemptSchemaIn,
     token: str = Header(alias='Auth-Token'),
 ) -> ApiResponse:
-    print(1232131231321312312313123123123)
     container = get_container()
 
     use_case = CreateAttemptUseCase(

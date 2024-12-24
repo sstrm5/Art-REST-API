@@ -1,3 +1,5 @@
+from datetime import datetime
+from core.api.v1.questions.schemas import AttemptSchemaOut
 from ninja import Schema
 
 
@@ -28,3 +30,12 @@ class TokenInSchema(Schema):
 
 class RefreshInSchema(Schema):
     refresh_token: str
+
+
+class UserInfoSchema(Schema):
+    id: int
+    avatar_path: str
+    user_name: str
+    user_email: str
+    user_created_at: datetime
+    user_attempts: list[AttemptSchemaOut]

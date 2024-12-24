@@ -14,4 +14,4 @@ class GetInfoAboutUserUseCase:
         name = f"{customer.first_name} {customer.last_name}"
         customer_attempts = self.attempt_service.get_customer_attempt_list(
             user_id=customer.id)
-        return name, customer.email, customer.created_at, customer_attempts
+        return customer.id, customer.picture, name, customer.email, customer.created_at, customer_attempts

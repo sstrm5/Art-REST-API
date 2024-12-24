@@ -1,7 +1,9 @@
 from django.http import HttpRequest
-from core.api.v1.questions.schemas import CheckUserExistenceIn, CheckUserExistenceOut
+from core.api.v1.questions.schemas import AttemptSchemaOut, CheckUserExistenceIn, CheckUserExistenceOut
+from core.apps.customers.use_cases import GetInfoAboutUserUseCase
 from core.apps.questions.containers import get_container
-from ninja import Router
+from core.apps.questions.services.attempts import BaseAttemptService
+from ninja import Router, Header
 from ninja.errors import HttpError
 
 from core.api.schemas import ApiResponse
@@ -12,6 +14,7 @@ from core.api.v1.customers.schemas import (
     RefreshInSchema,
     TokenInSchema,
     TokenOutSchema,
+    UserInfoSchema,
 )
 from core.apps.common.exceptions import ServiceException
 from core.apps.customers.services.auth import BaseAuthService
@@ -87,3 +90,27 @@ def check_user_existence_handler(
         return ApiResponse(data=CheckUserExistenceOut(is_user_exists=is_user_exists))
     except Exception as exception:
         raise HttpError(status_code=400, message=exception.message)
+
+
+@router.post('/get_info', response=ApiResponse[UserInfoSchema])
+def get_info_about_user_handler(
+    request,
+    token: str = Header(alias='Auth-Token'),
+):
+    container = get_container()
+    use_case = GetInfoAboutUserUseCase(
+        customer_service=container.resolve(BaseCustomerService),
+        attempt_service=container.resolve(BaseAttemptService)
+    )
+    user_id, avatar_path, user_name, user_email, user_created_at, user_attempts = use_case.execute(
+        token=token)
+    user_attempts = [AttemptSchemaOut.from_entity(
+        attempt) for attempt in user_attempts]
+    return ApiResponse(data=UserInfoSchema(
+        id=user_id,
+        avatar_path=avatar_path,
+        user_name=user_name,
+        user_email=user_email,
+        user_created_at=user_created_at,
+        user_attempts=user_attempts,
+    ))
