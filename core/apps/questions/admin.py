@@ -1,4 +1,5 @@
 from django.contrib import admin
+from core.apps.questions.models.sessions import Session
 import nested_admin
 
 from core.apps.questions.models.attempts import Attempt
@@ -51,3 +52,8 @@ class ProductAdmin1(nested_admin.NestedModelAdmin):
     list_display = ('id', 'title', 'subject', 'created_at',
                     'description', 'is_visible')
     inlines = (QuestionInline,)
+
+
+@admin.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'test', 'created_at')

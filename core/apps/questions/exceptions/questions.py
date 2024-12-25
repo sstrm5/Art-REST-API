@@ -43,3 +43,24 @@ class TestAlreadyStartedException(ServiceException):
     @property
     def message(self):
         return 'Test already started'
+
+
+@dataclass(eq=False)
+class TestWasNotStartedException(ServiceException):
+    @property
+    def message(self):
+        return 'Test was not started'
+
+
+@dataclass(eq=False)
+class SessionAlreadyExistsException(ServiceException):
+    @property
+    def message(self):
+        return 'The user is already solving the test'
+
+
+@dataclass(eq=False)
+class SessionDoesNotExistException(ServiceException):
+    @property
+    def message(self):
+        return 'Session does not exist (test was not started)'

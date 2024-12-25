@@ -111,7 +111,6 @@ class AttemptSchemaIn(Schema):
 
 
 class AttemptUpdateSchema(Schema):
-    test_id: int
     user_answers: dict[str, list[str]]
 
 
@@ -143,4 +142,9 @@ class AnswersOut(Schema):
     test_id: int
     user_answers: dict[str, list[str]]
     correct_answers: dict[str, list[str]]
+    question_list: list[QuestionSchemaOut]
     total_score: int
+
+
+class CurrentTestIdSchema(Schema):
+    test_id: int

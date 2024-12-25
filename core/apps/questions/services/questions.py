@@ -21,6 +21,7 @@ from core.apps.questions.models.subjects import Subject
 from core.apps.questions.exceptions.questions import (
     SubjectException,
     TestNotFoundException,
+    TestWasNotStartedException,
 )
 
 
@@ -125,6 +126,7 @@ class ORMTestService(BaseTestService):
         attempt_number = AttemptModel.objects.filter(
             user=user, test=test).count()
 
+        # Создание словаря с правильными ответами
         correct_answers = {}
         for question_number, question in enumerate(question_list, 1):
             correct_question_answers = []
@@ -133,6 +135,7 @@ class ORMTestService(BaseTestService):
                     correct_question_answers.append(str(answer_index))
             correct_answers[str(question_number)] = correct_question_answers
 
+        # Проверка ответов пользователя на правильность и оценивание
         user_answers = AttemptModel.objects.get(
             test=test_id,
             user=user,

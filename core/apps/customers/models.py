@@ -61,13 +61,6 @@ class Customer(TimedBaseModel):
         null=True,
     )
 
-    completed_tests = models.ManyToManyField(
-        Test,
-        verbose_name='Завершенные тесты',
-        blank=True,
-        related_name='customers',
-    )
-
     in_process = models.BooleanField(
         verbose_name='В процессе прохождения теста',
         default=False,
@@ -93,8 +86,6 @@ class Customer(TimedBaseModel):
             first_name=self.first_name,
             last_name=self.last_name,
             picture=self.picture if self.picture else '',
-            completed_tests=[test.to_entity()
-                             for test in self.completed_tests.all()],
             in_process=self.in_process,
             role=self.role,
             created_at=self.created_at,
