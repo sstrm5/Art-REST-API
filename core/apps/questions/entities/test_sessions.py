@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Session:
+class TestSession:
     id: int
     user_id: int
     test_id: int

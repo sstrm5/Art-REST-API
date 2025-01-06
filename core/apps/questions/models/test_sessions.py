@@ -3,10 +3,10 @@ from django.db import models
 from core.apps.common.models import TimedBaseModel
 from core.apps.customers.models import Customer
 from core.apps.questions.models.questions import Test
-from core.apps.questions.entities.sessions import Session as SessionEntity
+from core.apps.questions.entities.test_sessions import TestSession as TestSessionEntity
 
 
-class Session(TimedBaseModel):
+class TestSession(TimedBaseModel):
     user = models.ForeignKey(
         Customer,
         verbose_name='Пользователь',
@@ -23,10 +23,10 @@ class Session(TimedBaseModel):
         verbose_name_plural = 'Сессии'
 
     def __str__(self):
-        return f"Session #{self.id} - {self.user.first_name} {self.user.last_name} - {self.test.title}"
+        return f"Test-session #{self.id} - {self.user.first_name} {self.user.last_name} - {self.test.title}"
 
-    def to_entity(self) -> SessionEntity:
-        return SessionEntity(
+    def to_entity(self) -> TestSessionEntity:
+        return TestSessionEntity(
             id=self.id,
             user_id=self.user.id,
             test_id=self.test.id,

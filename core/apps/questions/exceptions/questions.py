@@ -53,24 +53,24 @@ class TestWasNotStartedException(ServiceException):
 
 
 @dataclass(eq=False)
-class SessionAlreadyExistsException(ServiceException):
+class TestSessionAlreadyExistsException(ServiceException):
     @property
     def message(self):
         return 'The user is already solving the test'
 
 
 @dataclass(eq=False)
-class SessionDoesNotExistException(ServiceException):
+class TestSessionDoesNotExistException(ServiceException):
     @property
     def message(self):
-        return 'Session does not exist (test was not started)'
+        return 'Test-session does not exist (test was not started)'
 
 
 @dataclass(eq=False)
-class SessionNotOverException(ServiceException):
+class TestSessionNotOverException(ServiceException):
     @property
     def message(self):
-        return 'Session is not over yet'
+        return 'Test-session is not over yet'
 
 
 @dataclass(eq=False)

@@ -5,10 +5,10 @@ from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.services.customers import BaseCustomerService
 
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
-from core.apps.questions.exceptions.questions import SessionDoesNotExistException, SessionNotOverException, TestAlreadyStartedException, WrongAccessTokenException
+from core.apps.questions.exceptions.questions import TestSessionDoesNotExistException, TestSessionNotOverException, TestAlreadyStartedException, WrongAccessTokenException
 from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
-from core.apps.questions.services.sessions import BaseSessionService
+from core.apps.questions.services.test_sessions import BaseTestSessionService
 
 
 @dataclass
@@ -64,15 +64,15 @@ class EndAttemptUseCase:
     customer_service: BaseCustomerService
     test_service: BaseTestService
     question_service: BaseQuestionService
-    session_service: BaseSessionService
+    test_session_service: BaseTestSessionService
 
     def execute(self, token: str):
         customer = self.customer_service.get_by_token(token)
 
-        if not self.session_service.is_session_exists(user_id=customer.id):
-            raise SessionDoesNotExistException()
+        if not self.test_session_service.is_session_exists(user_id=customer.id):
+            raise TestSessionDoesNotExistException()
 
-        test_id = self.session_service.find_out_the_current_test(
+        test_id = self.test_session_service.find_out_the_current_test(
             user_id=customer.id)
 
         question_list = self.question_service.get_question_list(
@@ -86,7 +86,7 @@ class EndAttemptUseCase:
 
         self.customer_service.change_status(
             customer=customer, in_process=False)
-        self.session_service.delete_session_by_user(user_id=customer.id)
+        self.test_session_service.delete_session_by_user(user_id=customer.id)
 
         return test_id
 
@@ -96,14 +96,14 @@ class GetLastAttemptResultUseCase:
     customer_service: BaseCustomerService
     question_service: BaseQuestionService
     attempt_service: BaseAttemptService
-    session_service: BaseSessionService
+    test_session_service: BaseTestSessionService
     test_service: BaseTestService
 
     def execute(self, token: str):
         customer = self.customer_service.get_by_token(token)
 
-        if self.session_service.is_session_exists(user_id=customer.id):
-            raise SessionNotOverException()
+        if self.test_session_service.is_session_exists(user_id=customer.id):
+            raise TestSessionNotOverException()
 
         attempt = self.attempt_service.get_last_attempt(user_id=customer.id)
 
@@ -117,7 +117,7 @@ class GetLastAttemptResultUseCase:
             question_list=question_list,
         )
 
-        return test_id, correct_answers, user_answers, total_score
+        return test_id, question_list, correct_answers, user_answers, total_score
 
 
 @dataclass
@@ -154,17 +154,17 @@ class GetAttemptListByCustomerUseCase:
 class CreateAttemptUseCase:
     attempt_service: BaseAttemptService
     customer_service: BaseCustomerService
-    session_service: BaseSessionService
+    test_session_service: BaseTestSessionService
 
     def execute(self, test_id: int, token: str):
         customer = self.customer_service.get_by_token(token=token)
-        if self.session_service.is_session_exists(user_id=customer.id):
+        if self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestAlreadyStartedException()
         attempt = self.attempt_service.create_attempt(
             customer=customer,
             test_id=test_id,
         )
-        self.session_service.create_session(
+        self.test_session_service.create_session(
             user_id=customer.id, test_id=test_id)
         self.customer_service.change_status(customer=customer, in_process=True)
         return attempt
@@ -183,15 +183,15 @@ class GetSubjectsUseCase:
 class UpdateAttemptAnswersUseCase:
     customer_service: BaseCustomerService
     attempt_service: BaseAttemptService
-    session_service: BaseSessionService
+    test_session_service: BaseTestSessionService
 
     def execute(self, user_answers: dict[str, list[str]], token: str):
         customer = self.customer_service.get_by_token(token)
 
-        if not self.session_service.is_session_exists(user_id=customer.id):
-            raise SessionDoesNotExistException()
+        if not self.test_session_service.is_session_exists(user_id=customer.id):
+            raise TestSessionDoesNotExistException()
 
-        test_id = self.session_service.find_out_the_current_test(
+        test_id = self.test_session_service.find_out_the_current_test(
             user_id=customer.id)
 
         attempt = self.attempt_service.update_attempt(
@@ -204,15 +204,15 @@ class UpdateAttemptAnswersUseCase:
 
 @dataclass
 class GetCurrentTestUseCase:
-    session_service: BaseSessionService
+    test_session_service: BaseTestSessionService
     customer_service: BaseCustomerService
 
     def execute(self, token: str):
         customer = self.customer_service.get_by_token(token)
 
-        if not self.session_service.is_session_exists(user_id=customer.id):
-            raise SessionDoesNotExistException()
+        if not self.test_session_service.is_session_exists(user_id=customer.id):
+            raise TestSessionDoesNotExistException()
 
-        test_id = self.session_service.find_out_the_current_test(
+        test_id = self.test_session_service.find_out_the_current_test(
             user_id=customer.id)
         return test_id

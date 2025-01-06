@@ -152,6 +152,7 @@ class CurrentTestIdSchema(Schema):
 
 class LastAttemptResultSchema(Schema):
     test_id: int
+    question_list: list[QuestionSchemaOut]
     correct_answers: dict[str, list[str]]
     user_answers: dict[str, list[str]]
     total_score: int

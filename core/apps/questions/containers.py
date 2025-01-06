@@ -5,7 +5,7 @@ from core.apps.customers.services.customers import BaseCustomerService, ORMCusto
 from core.apps.customers.services.senders import BaseSenderService, MailSenderService
 from core.apps.questions.services.attempts import BaseAttemptService, ORMAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService, ORMQuestionService, ORMTestService
-from core.apps.questions.services.sessions import BaseSessionService, ORMSessionService
+from core.apps.questions.services.test_sessions import BaseTestSessionService, ORMTestSessionService
 import punq
 
 
@@ -23,5 +23,5 @@ def _initialize_container():
     container.register(BaseCodeService, DjangoCacheCodeService)
     container.register(BaseSenderService, MailSenderService)
     container.register(BaseAuthService, AuthService)
-    container.register(BaseSessionService, ORMSessionService)
+    container.register(BaseTestSessionService, ORMTestSessionService)
     return container
