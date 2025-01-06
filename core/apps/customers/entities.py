@@ -12,3 +12,14 @@ class CustomerEntity:
     in_process: bool
     role: str
     created_at: datetime
+
+
+@dataclass
+class CustomerSession:
+    id: int
+    customer: CustomerEntity
+    access_token: str
+    refresh_token: str
+    expires_in: int
+    refresh_expires_in: int
+    device_info: str

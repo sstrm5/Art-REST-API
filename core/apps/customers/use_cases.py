@@ -9,8 +9,15 @@ class GetInfoAboutUserUseCase:
     customer_service: BaseCustomerService
     attempt_service: BaseAttemptService
 
-    def execute(self, token: str):
-        customer = self.customer_service.get_by_token(token=token)
+    def execute(
+            self,
+            token: str,
+            device_info: str,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
         name = f"{customer.first_name} {customer.last_name}"
         customer_attempts = self.attempt_service.get_customer_attempt_list(
             user_id=customer.id)

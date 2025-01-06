@@ -12,7 +12,8 @@ from core.api.v1.customers.schemas import (
     CreateAndAuthInSchema,
     GetAndAuthInSchema,
     RefreshInSchema,
-    TokenInSchema,
+    TokenCreateInSchema,
+    TokenGetInSchema,
     TokenOutSchema,
     UserInfoSchema,
 )
@@ -24,11 +25,11 @@ from core.apps.customers.services.customers import BaseCustomerService
 router = Router(tags=['Customers👨‍💻'])
 
 
-@router.post('create_and_auth', response=ApiResponse[AuthOutSchema], operation_id='create_and_authorize', summary='Создать пользователя и отправить код✉️')
-def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema) -> ApiResponse:
+@router.post('create/send_code', response=ApiResponse[AuthOutSchema], operation_id='create_and_authorize', summary='Создать пользователя и отправить код✉️')
+def create_and_send_code_handler(request: HttpRequest, schema: CreateAndAuthInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
-    service.create_and_authorize(
+    service.send_code_to_create(
         email=schema.email,
         first_name=schema.first_name,
         last_name=schema.last_name,
@@ -37,24 +38,46 @@ def create_and_auth_handler(request: HttpRequest, schema: CreateAndAuthInSchema)
     return ApiResponse(data=AuthOutSchema(message=f'Code sent to: {schema.email}'))
 
 
-@router.post('get_and_auth', response=ApiResponse[AuthOutSchema], operation_id='get_and_authorize', summary='Получить пользователя и отправить код✉️')
-def get_and_auth_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> ApiResponse:
+@router.post('create/confirm', response=ApiResponse[TokenOutSchema], operation_id='create_and_confirm', summary='Проверить код и получить токены✅')
+def confirm_and_create_handler(request: HttpRequest, schema: TokenCreateInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
-    service.get_and_authorize(
+    try:
+        access_token, refresh_token, expires_in = service.confirm_and_create(
+            email=schema.email,
+            code=schema.code,
+            first_name=schema.first_name,
+            last_name=schema.last_name,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
+    except ServiceException as exception:
+        raise HttpError(status_code=400,
+                        message=exception.message) from exception
+
+    return ApiResponse(data=TokenOutSchema(access_token=access_token, refresh_token=refresh_token, expires_in=expires_in))
+
+
+@router.post('get/send_code', response=ApiResponse[AuthOutSchema], operation_id='get_and_authorize', summary='Получить пользователя и отправить код✉️')
+def get_and_send_code_handler(request: HttpRequest, schema: GetAndAuthInSchema) -> ApiResponse:
+    container = get_container()
+    service = container.resolve(BaseAuthService)
+    service.send_code_to_get(
         email=schema.email,
     )
 
     return ApiResponse(data=AuthOutSchema(message=f'Code sent to: {schema.email}'))
 
 
-@router.post('confirm', response=ApiResponse[TokenOutSchema], operation_id='confirm', summary='Проверить код и получить токены✅')
-def get_token_handler(request: HttpRequest, schema: TokenInSchema) -> ApiResponse:
+@router.post('get/confirm', response=ApiResponse[TokenOutSchema], operation_id='get_and_confirm', summary='Проверить код и получить токены✅')
+def confirm_and_get_handler(request: HttpRequest, schema: TokenGetInSchema) -> ApiResponse:
     container = get_container()
     service = container.resolve(BaseAuthService)
     try:
-        access_token, refresh_token, expires_in = service.confirm(
-            email=schema.email, code=schema.code,)
+        access_token, refresh_token, expires_in = service.confirm_and_get(
+            email=schema.email,
+            code=schema.code,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
     except ServiceException as exception:
         raise HttpError(status_code=400,
                         message=exception.message) from exception

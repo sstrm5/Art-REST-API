@@ -1,5 +1,4 @@
 import time
-from uuid import uuid4
 from django.db import models
 
 from core.apps.common.models import TimedBaseModel
@@ -8,12 +7,6 @@ from core.apps.questions.models.questions import Test
 
 
 class Customer(TimedBaseModel):
-    def get_expires_in():
-        return int(time.time()) + 3600
-
-    def get_refresh_expires_in():
-        return int(time.time()) + 1209600
-
     email = models.CharField(
         verbose_name='Почта пользователя',
         unique=True,
@@ -30,28 +23,6 @@ class Customer(TimedBaseModel):
         verbose_name='Фамилия',
         max_length=50,
         null=True,
-    )
-
-    access_token = models.CharField(
-        verbose_name='Токен авторизации',
-        default=uuid4,
-        max_length=255,
-    )
-
-    refresh_token = models.CharField(
-        verbose_name='Токен для обновления access token',
-        default=uuid4,
-        max_length=255,
-    )
-
-    expires_in = models.BigIntegerField(
-        verbose_name='Время до истечения access token',
-        default=get_expires_in,
-    )
-
-    refresh_expires_in = models.BigIntegerField(
-        verbose_name='Время до истечения refresh token',
-        default=get_refresh_expires_in,
     )
 
     picture = models.ImageField(

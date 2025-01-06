@@ -99,6 +99,7 @@ def create_attempt_handler(
         attempt = use_case.execute(
             token=token,
             test_id=schema.test_id,
+            device_info=request.META["HTTP_USER_AGENT"],
         )
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
@@ -123,6 +124,7 @@ def update_attempt_handler(
         attempt = use_case.execute(
             user_answers=schema.user_answers,
             token=token,
+            device_info=request.META["HTTP_USER_AGENT"],
         )
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
@@ -146,7 +148,10 @@ def end_attempt_handler(
     )
 
     try:
-        test_id = use_case.execute(token=token)
+        test_id = use_case.execute(
+            token=token,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
 
@@ -170,7 +175,9 @@ def get_last_result_handler(
 
     try:
         test_id, question_list, correct_answers, user_answers, total_score = use_case.execute(
-            token=token)
+            token=token,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
         question_list = [QuestionSchemaOut.from_entity(
             entity) for entity in question_list]
     except ServiceException as exception:
@@ -253,7 +260,10 @@ def get_current_session_test_id(
         customer_service=container.resolve(BaseCustomerService),
     )
     try:
-        test_id = use_case.execute(token=token)
+        test_id = use_case.execute(
+            token=token,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
     return ApiResponse(data=CurrentTestIdSchema(test_id=test_id))
@@ -283,6 +293,7 @@ def create_test_handler(
             questions=data.questions,
             token=token,
             file=file,
+            device_info=request.META["HTTP_USER_AGENT"],
         )
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)

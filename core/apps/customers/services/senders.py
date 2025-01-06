@@ -8,7 +8,7 @@ from core.project.settings import local as settings
 
 class BaseSenderService(ABC):
     @abstractmethod
-    def send_code(self, customer: CustomerEntity, code: str) -> None:
+    def send_code(self, email: str, code: str) -> None:
         ...
 
 
@@ -18,11 +18,12 @@ class DummySenderService(BaseSenderService):
 
 
 class MailSenderService(BaseSenderService):
-    def send_code(self, customer: CustomerEntity, code: str) -> None:
+    def send_code(self, email: str, code: str, first_name: str) -> None:
         subject = 'Код подтверждения'
-        message = f'Здравствуйте, {customer.first_name}! Ваш одноразовый код: {code}\nЕсли вы получили код по ошибке, просто проигнорируйте его.'
+        message = f'Здравствуйте, {first_name}! Ваш одноразовый код: {
+            code}\nЕсли вы получили код по ошибке, просто проигнорируйте его.'
         from_email = settings.EMAIL_HOST_USER
-        recipient_list = [customer.email]
+        recipient_list = [email]
         send_mail(
             subject=subject,
             message=message,

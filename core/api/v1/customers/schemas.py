@@ -23,7 +23,14 @@ class TokenOutSchema(Schema):
     expires_in: int
 
 
-class TokenInSchema(Schema):
+class TokenCreateInSchema(Schema):
+    first_name: str
+    last_name: str
+    email: str
+    code: str
+
+
+class TokenGetInSchema(Schema):
     email: str
     code: str
 

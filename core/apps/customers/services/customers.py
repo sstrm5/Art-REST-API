@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import time
 from uuid import uuid4
 
+from core.apps.customers.customer_session_model import CustomerSession
 from core.apps.customers.entities import CustomerEntity
+from core.apps.customers.exceptions.customer_sessions import SessionDoesNotExistException
 from core.apps.customers.exceptions.customers import AccessTokenExcpiredException, RefreshTokenExpiredException, RefreshTokenNotFoundException
 from core.apps.customers.models import Customer
 
@@ -35,13 +37,16 @@ class ORMCustomerService(BaseCustomerService):
         customer = Customer.objects.get(email=email)
         return customer.to_entity()
 
-    def get_by_token(self, token: str) -> CustomerEntity:
-        customer = Customer.objects.filter(access_token=token).first()
-        if customer:
+    def get_by_token(self, token: str, device_info: str) -> CustomerEntity:
+        session = CustomerSession.objects.filter(
+            access_token=token, device_info=device_info).first()
+        if session:
+            customer = session.customer
             current_time = int(time.time())
-            if current_time < customer.expires_in:
+            if current_time < session.expires_in:
                 return customer.to_entity()
-        raise AccessTokenExcpiredException()
+            raise AccessTokenExcpiredException()
+        raise SessionDoesNotExistException()
 
     def get_by_id(self, user_id: int) -> CustomerEntity:
         customer = Customer.objects.get(id=user_id)
@@ -50,19 +55,21 @@ class ORMCustomerService(BaseCustomerService):
     def check_user_existence(self, email: str):
         return Customer.objects.filter(email=email).exists()
 
-    def generate_token(self, customer: CustomerEntity) -> tuple:
+    def generate_token(self, customer: CustomerEntity, device_info: str) -> tuple:
         new_access_token = str(uuid4())
         new_refresh_token = str(uuid4())
         current_time = int(time.time())
         expires_in = current_time + 3600
         refresh_expires_in = current_time + 604800
-        Customer.objects.filter(email=customer.email).update(
+        customer_model = Customer.objects.get(email=customer.email)
+        CustomerSession.objects.create(
+            customer=customer_model,
             access_token=new_access_token,
             refresh_token=new_refresh_token,
             expires_in=expires_in,
             refresh_expires_in=refresh_expires_in,
+            device_info=device_info,
         )
-
         return new_access_token, new_refresh_token, expires_in
 
     def refresh_token(self, refresh_token: str):

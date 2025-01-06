@@ -16,16 +16,21 @@ class CreateTestUseCase:
     test_service: BaseTestService
     customer_service: BaseCustomerService
 
-    def execute(self,
-                subject: str,
-                title: str,
-                description: str,
-                work_time: int,
-                questions: list[QuestionDataSchemaIn],
-                token: str,
-                file,
-                ):
-        customer = self.customer_service.get_by_token(token)
+    def execute(
+            self,
+            subject: str,
+            title: str,
+            description: str,
+            work_time: int,
+            questions: list[QuestionDataSchemaIn],
+            token: str,
+            device_info: str,
+            file,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
         if not customer or customer.role != 'ADMIN':
             raise WrongAccessTokenException("Invalid access token")
 
@@ -66,8 +71,15 @@ class EndAttemptUseCase:
     question_service: BaseQuestionService
     test_session_service: BaseTestSessionService
 
-    def execute(self, token: str):
-        customer = self.customer_service.get_by_token(token)
+    def execute(
+            self,
+            token: str,
+            device_info: str,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
 
         if not self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestSessionDoesNotExistException()
@@ -99,8 +111,15 @@ class GetLastAttemptResultUseCase:
     test_session_service: BaseTestSessionService
     test_service: BaseTestService
 
-    def execute(self, token: str):
-        customer = self.customer_service.get_by_token(token)
+    def execute(
+            self,
+            token: str,
+            device_info: str,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
 
         if self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestSessionNotOverException()
@@ -156,8 +175,16 @@ class CreateAttemptUseCase:
     customer_service: BaseCustomerService
     test_session_service: BaseTestSessionService
 
-    def execute(self, test_id: int, token: str):
-        customer = self.customer_service.get_by_token(token=token)
+    def execute(
+            self,
+            token: str,
+            test_id: int,
+            device_info: str,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
         if self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestAlreadyStartedException()
         attempt = self.attempt_service.create_attempt(
@@ -185,8 +212,11 @@ class UpdateAttemptAnswersUseCase:
     attempt_service: BaseAttemptService
     test_session_service: BaseTestSessionService
 
-    def execute(self, user_answers: dict[str, list[str]], token: str):
-        customer = self.customer_service.get_by_token(token)
+    def execute(self, user_answers: dict[str, list[str]], token: str, device_info: str):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
 
         if not self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestSessionDoesNotExistException()
@@ -207,8 +237,16 @@ class GetCurrentTestUseCase:
     test_session_service: BaseTestSessionService
     customer_service: BaseCustomerService
 
-    def execute(self, token: str):
-        customer = self.customer_service.get_by_token(token)
+    def execute(
+            self,
+            token: str,
+            test_id: int,
+            device_info: str,
+    ):
+        customer = self.customer_service.get_by_token(
+            token=token,
+            device_info=device_info,
+        )
 
         if not self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestSessionDoesNotExistException()
