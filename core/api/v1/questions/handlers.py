@@ -13,11 +13,13 @@ from core.apps.questions.services.questions import (
 )
 from core.apps.questions.services.sessions import BaseSessionService
 from core.apps.questions.use_cases import (
-    CheckTestUseCase,
     CreateAttemptUseCase,
     CreateTestUseCase,
+    EndAttemptUseCase,
+    GetAttemptListByCustomerUseCase,
     GetAttemptListUseCase,
     GetCurrentTestUseCase,
+    GetLastAttemptResultUseCase,
     GetSubjectsUseCase,
     GetTestUseCase,
     UpdateAttemptAnswersUseCase,
@@ -33,6 +35,7 @@ from core.api.v1.questions.schemas import (
     AttemptSchemaOutWithName,
     AttemptUpdateSchema,
     CurrentTestIdSchema,
+    LastAttemptResultSchema,
     TestAndQuestionDataSchemaIn,
     TestSchemaIn,
     TestSchemaOut,
@@ -79,7 +82,7 @@ def get_test_handler(request, test_id: int) -> ApiResponse:
     return ApiResponse(data=ListResponse(items=items), meta={'duration': test_duration})
 
 
-@router.post('/create/new_test', response={200: ApiResponse[TestSchemaOut]}, summary='Создать тест')
+@router.post('/new_test/create', response={200: ApiResponse[TestSchemaOut]}, summary='Создать тест')
 def create_test_handler(
     request,
     schema: TestSchemaIn,
@@ -109,41 +112,59 @@ def create_test_handler(
     return ApiResponse(data=TestSchemaOut.from_entity(test))
 
 
-@router.post('/check/test', response=ApiResponse[AnswersOut], summary='Закончить попытку🍎')
-def check_test_handler(
+@router.post('/attempt/end', response=ApiResponse, summary='Закончить попытку🍎')
+def end_attempt_handler(
     request,
     token: str = Header(alias='Auth-Token'),
 ) -> ApiResponse:
 
     container = get_container()
 
-    use_case = CheckTestUseCase(
+    use_case = EndAttemptUseCase(
         customer_service=container.resolve(BaseCustomerService),
         test_service=container.resolve(BaseTestService),
         question_service=container.resolve(BaseQuestionService),
         session_service=container.resolve(BaseSessionService),
     )
+
     try:
-
-        test_id, user_answers, correct_answers, question_list, total_score = use_case.execute(
-            token=token,
-        )
-        question_list = [QuestionSchemaOut.from_entity(
-            entity) for entity in question_list]
-
-    except Exception as exception:
+        test_id = use_case.execute(token=token)
+    except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
 
-    return ApiResponse(data=AnswersOut(
+    return ApiResponse(data={"test_id": test_id})
+
+
+@router.post('/attempt/result', response=ApiResponse, summary='Получить результаты последней попытки🍎')
+def get_last_result_handler(
+    request,
+    token: str = Header(alias='Auth-Token'),
+):
+    container = get_container()
+
+    use_case = GetLastAttemptResultUseCase(
+        customer_service=container.resolve(BaseCustomerService),
+        question_service=container.resolve(BaseQuestionService),
+        attempt_service=container.resolve(BaseAttemptService),
+        session_service=container.resolve(BaseSessionService),
+        test_service=container.resolve(BaseTestService),
+    )
+
+    try:
+        test_id, question_list, user_answers, score = use_case.execute(
+            token=token)
+    except ServiceException as exception:
+        raise HttpError(status_code=400, message=exception.message)
+
+    return ApiResponse(data=LastAttemptResultSchema(
         test_id=test_id,
+        correct_answers=question_list,
         user_answers=user_answers,
-        correct_answers=correct_answers,
-        question_list=question_list,
-        total_score=total_score,
+        total_score=score,
     ))
 
 
-@router.post('/create/new_attempt', response=ApiResponse[AttemptSchemaOut], summary='Начать попытку🍏')
+@router.post('/attempt/create', response=ApiResponse[AttemptSchemaOut], summary='Начать попытку🍏')
 def create_attempt_handler(
     request,
     schema: AttemptSchemaIn,
@@ -167,7 +188,7 @@ def create_attempt_handler(
     return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
 
 
-@router.post('/update/attempt', response=ApiResponse, summary='Обновить ответы на текущий тест➕')
+@router.post('/attempt/update', response=ApiResponse, summary='Обновить ответы на текущий тест➕')
 def update_attempt_handler(
     request,
     schema: AttemptUpdateSchema,
@@ -191,7 +212,7 @@ def update_attempt_handler(
     return ApiResponse(data=AttemptSchemaOut.from_entity(entity=attempt))
 
 
-@router.get('/{test_id}/attempts', response=ApiResponse[ListResponse[AttemptSchemaOutWithName]], summary='Получить список попыток на конкретный тест всех пользователей📜')
+@router.get('/{test_id}/attempts', response=ApiResponse[ListResponse[AttemptSchemaOutWithName]], summary='Получить список попыток всех пользователей на конкретный тест📜')
 def get_attempt_list_handler(request, test_id: int) -> ApiResponse:
     container = get_container()
 
@@ -212,6 +233,29 @@ def get_attempt_list_handler(request, test_id: int) -> ApiResponse:
     return ApiResponse(data=ListResponse(items=items))
 
 
+@router.get('/{test_id}/attempts/user', response=ApiResponse[ListResponse[AttemptSchemaOut]], summary='Получить список попыток ПОЛЬЗОВАТЕЛЯ на конкретный тест📜')
+def get_attempt_list_handler_by_customer(
+    request,
+    test_id: int,
+    token: str = Header(alias="Auth-Token"),
+) -> ApiResponse:
+    container = get_container()
+
+    use_case = GetAttemptListByCustomerUseCase(
+        attempt_service=container.resolve(BaseAttemptService),
+        customer_service=container.resolve(BaseCustomerService),
+    )
+    try:
+        attempt_list = use_case.execute(test_id=test_id, token=token)
+    except ServiceException as exception:
+        raise HttpError(status_code=400, message=exception.message)
+
+    items = [AttemptSchemaOut.from_entity(
+        attempt_entity) for attempt_entity in attempt_list]
+
+    return ApiResponse(data=ListResponse(items=items))
+
+
 @router.get('/subjects/get', response=ApiResponse[ListResponse], summary='Получить список тем📜')
 def get_subjects_handler(request) -> ApiResponse:
     container = get_container()
@@ -225,7 +269,7 @@ def get_subjects_handler(request) -> ApiResponse:
     return ApiResponse(data=ListResponse(items=subjects))
 
 
-@router.get('/session/test_id', response=ApiResponse[CurrentTestIdSchema], summary='Получить ID теста, который сейчас проходит пользователь')
+@router.get('/session/get_test_id', response=ApiResponse[CurrentTestIdSchema], summary='Получить ID теста, который сейчас проходит пользователь')
 def get_current_session_test_id(
     request,
     token: str = Header(alias='Auth-Token'),

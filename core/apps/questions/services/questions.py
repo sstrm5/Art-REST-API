@@ -154,6 +154,16 @@ class ORMTestService(BaseTestService):
 
         return user_answers, correct_answers, total_score
 
+    def get_correct_answers(self, test_id: int, question_list: Iterable[Question]) -> dict:
+        correct_answers = {}
+        for question_number, question in enumerate(question_list, 1):
+            correct_question_answers = []
+            for answer_index, answer_is_correct in enumerate(question.answers_dict.values(), 1):
+                if answer_is_correct:
+                    correct_question_answers.append(str(answer_index))
+            correct_answers[str(question_number)] = correct_question_answers
+        return correct_answers
+
     def get_test_duration(self, test_id: int) -> int:
         try:
             test = TestModel.objects.get(id=test_id)

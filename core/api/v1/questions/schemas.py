@@ -148,3 +148,10 @@ class AnswersOut(Schema):
 
 class CurrentTestIdSchema(Schema):
     test_id: int
+
+
+class LastAttemptResultSchema(Schema):
+    test_id: int
+    correct_answers: dict[str, list[str]]
+    user_answers: dict[str, list[str]]
+    total_score: int

@@ -5,7 +5,7 @@ from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.services.customers import BaseCustomerService
 
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
-from core.apps.questions.exceptions.questions import SessionDoesNotExistException, TestAlreadyStartedException, WrongAccessTokenException
+from core.apps.questions.exceptions.questions import SessionDoesNotExistException, SessionNotOverException, TestAlreadyStartedException, WrongAccessTokenException
 from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
 from core.apps.questions.services.sessions import BaseSessionService
@@ -60,7 +60,7 @@ class GetTestUseCase:
 
 
 @dataclass
-class CheckTestUseCase:
+class EndAttemptUseCase:
     customer_service: BaseCustomerService
     test_service: BaseTestService
     question_service: BaseQuestionService
@@ -77,7 +77,8 @@ class CheckTestUseCase:
 
         question_list = self.question_service.get_question_list(
             test_id=test_id)
-        user_answers, correct_answers, total_score = self.test_service.check_test(
+
+        self.test_service.check_test(
             customer=customer,
             test_id=test_id,
             question_list=question_list,
@@ -87,7 +88,36 @@ class CheckTestUseCase:
             customer=customer, in_process=False)
         self.session_service.delete_session_by_user(user_id=customer.id)
 
-        return test_id, user_answers, correct_answers, question_list, total_score
+        return test_id
+
+
+@dataclass
+class GetLastAttemptResultUseCase:
+    customer_service: BaseCustomerService
+    question_service: BaseQuestionService
+    attempt_service: BaseAttemptService
+    session_service: BaseSessionService
+    test_service: BaseTestService
+
+    def execute(self, token: str):
+        customer = self.customer_service.get_by_token(token)
+
+        if self.session_service.is_session_exists(user_id=customer.id):
+            raise SessionNotOverException()
+
+        attempt = self.attempt_service.get_last_attempt(user_id=customer.id)
+
+        test_id, user_answers, total_score = attempt.test_id, attempt.user_answers, attempt.total_score
+
+        question_list = self.question_service.get_question_list(
+            test_id=test_id)
+
+        correct_answers = self.test_service.get_correct_answers(
+            test_id=test_id,
+            question_list=question_list,
+        )
+
+        return test_id, correct_answers, user_answers, total_score
 
 
 @dataclass
@@ -105,6 +135,19 @@ class GetAttemptListUseCase:
             user_name = f"{customer.first_name} {customer.last_name}"
         attempt_list_with_customer_name.append((attempt_entity, user_name))
         return attempt_list_with_customer_name
+
+
+@dataclass
+class GetAttemptListByCustomerUseCase:
+    attempt_service: BaseAttemptService
+    customer_service: BaseCustomerService
+
+    def execute(self, test_id: int, token: str):
+        attempt_list: list[AttemptEntity] = self.attempt_service.get_attempt_list_by_customer(
+            test_id=test_id,
+            token=token,
+        )
+        return attempt_list
 
 
 @dataclass

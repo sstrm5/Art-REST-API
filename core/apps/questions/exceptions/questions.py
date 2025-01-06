@@ -64,3 +64,17 @@ class SessionDoesNotExistException(ServiceException):
     @property
     def message(self):
         return 'Session does not exist (test was not started)'
+
+
+@dataclass(eq=False)
+class SessionNotOverException(ServiceException):
+    @property
+    def message(self):
+        return 'Session is not over yet'
+
+
+@dataclass(eq=False)
+class AttemptDoesNotExistException(ServiceException):
+    @property
+    def message(self):
+        return 'Attempt does not exist'

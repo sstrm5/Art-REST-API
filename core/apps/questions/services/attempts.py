@@ -5,6 +5,7 @@ from typing import Iterable
 from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.models import Customer as CustomerModel
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
+from core.apps.questions.exceptions.questions import AttemptDoesNotExistException, TestNotFoundException
 from core.apps.questions.models.attempts import Attempt as AttemptModel
 from core.apps.questions.models.questions import Test as TestModel
 
@@ -29,7 +30,10 @@ class ORMAttemptService(BaseAttemptService):
         customer: CustomerEntity,
         test_id: int,
     ) -> AttemptEntity:
-        test = TestModel.objects.get(id=test_id)
+        try:
+            test = TestModel.objects.get(id=test_id)
+        except:
+            raise TestNotFoundException()
 
         customer = CustomerModel.objects.get(id=customer.id)
 
@@ -82,6 +86,22 @@ class ORMAttemptService(BaseAttemptService):
         attempts = AttemptModel.objects.filter(test_id=test_id)
         return [attempt.to_entity() for attempt in attempts]
 
+    def get_attempt_list_by_customer(
+            self,
+            test_id: int,
+            token: str,
+    ) -> list[AttemptEntity]:
+        attempts = AttemptModel.objects.filter(
+            test_id=test_id, user__access_token=token)
+        return [attempt.to_entity() for attempt in attempts]
+
     def get_customer_attempt_list(self, user_id: int):
         attempts = AttemptModel.objects.filter(user__id=user_id)
         return [attempt.to_entity() for attempt in attempts]
+
+    def get_last_attempt(self, user_id: int):
+        attempt = AttemptModel.objects.filter(
+            user_id=user_id).order_by('-attempt_number').first()
+        if not attempt:
+            raise AttemptDoesNotExistException()
+        return attempt.to_entity()
