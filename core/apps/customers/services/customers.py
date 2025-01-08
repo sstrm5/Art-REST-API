@@ -72,21 +72,24 @@ class ORMCustomerService(BaseCustomerService):
         )
         return new_access_token, new_refresh_token, expires_in
 
-    def refresh_token(self, refresh_token: str):
-        customer = Customer.objects.get(refresh_token=refresh_token)
-        if customer:
+    def refresh_token(self, refresh_token: str, device_info: str):
+        # customer = Customer.objects.get(refresh_token=refresh_token)
+        session = CustomerSession.objects.filter(
+            refresh_token=refresh_token, device_info=device_info).first()
+        if session:
             current_time = int(time.time())
-            if current_time < customer.refresh_expires_in:
+            if current_time < session.refresh_expires_in:
                 new_access_token = str(uuid4())
                 new_refresh_token = str(uuid4())
                 expires_in = current_time + 3600
                 refresh_expires_in = current_time + 1209600
-                Customer.objects.filter(email=customer.email).update(
-                    access_token=new_access_token,
-                    refresh_token=new_refresh_token,
-                    expires_in=expires_in,
-                    refresh_expires_in=refresh_expires_in,
-                )
+
+                session.access_token = new_access_token
+                session.refresh_token = new_refresh_token
+                session.expires_in = expires_in
+                session.refresh_expires_in = refresh_expires_in
+
+                session.save()
                 return new_access_token, new_refresh_token, expires_in
             else:
                 raise RefreshTokenExpiredException()

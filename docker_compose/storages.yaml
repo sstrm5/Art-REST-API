@@ -12,9 +12,54 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     env_file:
-     - ../.env
+      - ../.env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+    networks:
+      - dev
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/redisdata
+    networks:
+      - dev
+
+  celery-worker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    hostname: celery-worker
+    entrypoint: celery
+    command: -A core.project.celery.app worker --loglevel=info
+    volumes:
+      - celerydata:/celerydata
+    links:
+      - redis
+    depends_on:
+      - postgres
+    networks:
+      - dev
+
+  flower:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    hostname: flower
+    entrypoint: celery
+    command: -A core.project.celery.app flower
+    volumes:
+      - celerydata:/celerydata
+    links:
+      - redis
+    depends_on:
+      - postgres
+    ports:
+      - "5555:5555"
     networks:
       - dev
 
@@ -54,4 +99,6 @@ volumes:
   pg_data:
   pgadmin_data:
   staticfiles:
+  redisdata:
+  celerydata:
 

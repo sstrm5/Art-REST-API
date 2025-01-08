@@ -18,6 +18,10 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 
 RUN poetry config virtualenvs.create false
+
+RUN pip install --no-use-pep517 langdetect==1.0.9
+RUN pip install --no-use-pep517 pypika==0.48.9
+
 RUN poetry install --no-root --no-interaction --no-ansi
 
 COPY . /app/

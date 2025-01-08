@@ -15,7 +15,7 @@ class CustomerAdmin(admin.ModelAdmin):
 @admin.register(CustomerSession)
 class CustomerSessionAdmin(admin.ModelAdmin):
     list_display = ('id', 'customer', 'access_token',
-                    'device_info', 'created_at')
+                    'device_info', 'updated_at', 'created_at')
 
 
 admin.site.unregister(User)

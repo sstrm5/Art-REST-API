@@ -9,6 +9,8 @@ from core.apps.questions.exceptions.questions import TestSessionDoesNotExistExce
 from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
 from core.apps.questions.services.test_sessions import BaseTestSessionService
+from core.apps.questions.tasks import auto_submit_test
+from datetime import datetime, timedelta, timezone
 
 
 @dataclass
@@ -174,6 +176,7 @@ class CreateAttemptUseCase:
     attempt_service: BaseAttemptService
     customer_service: BaseCustomerService
     test_session_service: BaseTestSessionService
+    test_service: BaseTestService
 
     def execute(
             self,
@@ -194,6 +197,15 @@ class CreateAttemptUseCase:
         self.test_session_service.create_session(
             user_id=customer.id, test_id=test_id)
         self.customer_service.change_status(customer=customer, in_process=True)
+
+        # end_time = attempt.end_time
+        test_duration = self.test_service.get_test_duration(test_id=test_id)
+
+        # Отложенная celery задача
+        auto_submit_test.apply_async(kwargs={
+                                     "token": token, "device_info": device_info},
+                                     eta=datetime.now(timezone.utc) + timedelta(minutes=test_duration))
+
         return attempt
 
 

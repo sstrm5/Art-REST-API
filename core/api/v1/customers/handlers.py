@@ -91,7 +91,9 @@ def refresh_token_handler(request: HttpRequest, schema: RefreshInSchema) -> ApiR
     service = container.resolve(BaseCustomerService)
     try:
         access_token, refresh_token, expires_in = service.refresh_token(
-            refresh_token=schema.refresh_token)
+            refresh_token=schema.refresh_token,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
     except ServiceException as exception:
         raise HttpError(status_code=400,
                         message=exception.message) from exception

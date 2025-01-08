@@ -94,6 +94,7 @@ def create_attempt_handler(
         customer_service=container.resolve(BaseCustomerService),
         attempt_service=container.resolve(BaseAttemptService),
         test_session_service=container.resolve(BaseTestSessionService),
+        test_service=container.resolve(BaseTestService),
     )
     try:
         attempt = use_case.execute(
