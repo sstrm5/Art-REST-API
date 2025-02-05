@@ -128,7 +128,9 @@ def get_info_about_user_handler(
         attempt_service=container.resolve(BaseAttemptService)
     )
     user_id, avatar_path, user_name, user_email, user_created_at, user_attempts = use_case.execute(
-        token=token)
+        token=token,
+        device_info=request.META["HTTP_USER_AGENT"],
+    )
     user_attempts = [AttemptSchemaOut.from_entity(
         attempt) for attempt in user_attempts]
     return ApiResponse(data=UserInfoSchema(

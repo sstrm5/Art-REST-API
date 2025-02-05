@@ -7,3 +7,5 @@ static/*
 !static/.gitkeep
 *.sqlite*
 media/*
+.idea
+.gigaide

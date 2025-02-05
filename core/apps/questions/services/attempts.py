@@ -101,7 +101,7 @@ class ORMAttemptService(BaseAttemptService):
 
     def get_last_attempt(self, user_id: int):
         attempt = AttemptModel.objects.filter(
-            user_id=user_id).order_by('-attempt_number').first()
+            user_id=user_id).order_by('-created_at').first()
         if not attempt:
             raise AttemptDoesNotExistException()
         return attempt.to_entity()
