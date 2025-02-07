@@ -189,7 +189,10 @@ class CreateAttemptUseCase:
             device_info=device_info,
         )
         if self.test_session_service.is_session_exists(user_id=customer.id):
-            raise TestAlreadyStartedException()
+            # raise TestAlreadyStartedException()
+            attempt = self.attempt_service.get_last_attempt(
+                user_id=customer.id)
+            return attempt
         attempt = self.attempt_service.create_attempt(
             customer=customer,
             test_id=test_id,
