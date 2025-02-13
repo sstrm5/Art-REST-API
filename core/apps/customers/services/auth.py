@@ -4,6 +4,7 @@ from celery import shared_task
 from core.apps.customers.services.codes import BaseCodeService
 from core.apps.customers.services.customers import BaseCustomerService
 from core.apps.customers.services.senders import BaseSenderService
+from core.apps.customers.tasks import send_code_to_email_task
 
 
 @dataclass(eq=False)
@@ -32,16 +33,16 @@ class BaseAuthService(ABC):
 class AuthService(BaseAuthService):
     def send_code_to_create(self, email: str, first_name: str, last_name: str):
         code = self.codes_service.generate_code(email=email)
-        self.sender_service.send_code(
-            email=email, code=code, first_name=first_name)
+        send_code_to_email_task.apply_async(
+            kwargs={'email': email, 'code': code, 'first_name': first_name}, countdown=2)
 
     def send_code_to_get(self, email: str):
         customer = self.customer_service.get_by_email(email=email)
         if not customer:
             raise ValueError(f'No customer found with email: {email}')
         code = self.codes_service.generate_code(email=email)
-        self.sender_service.send_code(
-            email=email, code=code, first_name=customer.first_name)
+        send_code_to_email_task.apply_async(
+            kwargs={'email': email, 'code': code, 'first_name': customer.first_name}, countdown=2)
 
     def confirm_and_create(self, email: str, code: str, first_name: str, last_name: str,
                            device_info: str):

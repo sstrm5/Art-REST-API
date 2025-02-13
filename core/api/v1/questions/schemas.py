@@ -112,6 +112,7 @@ class AttemptSchemaIn(Schema):
 
 class AttemptUpdateSchema(Schema):
     user_answers: dict[str, list[str]]
+    test_id: int
 
 
 class AttemptSchemaOut(Schema):

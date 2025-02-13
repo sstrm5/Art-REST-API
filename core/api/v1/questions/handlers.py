@@ -125,6 +125,7 @@ def update_attempt_handler(
         attempt = use_case.execute(
             user_answers=schema.user_answers,
             token=token,
+            test_id=schema.test_id,
             device_info=request.META["HTTP_USER_AGENT"],
         )
     except ServiceException as exception:

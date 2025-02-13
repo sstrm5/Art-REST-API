@@ -78,3 +78,10 @@ class AttemptDoesNotExistException(ServiceException):
     @property
     def message(self):
         return 'Attempt does not exist'
+
+
+@dataclass(eq=False)
+class WrongTestException(ServiceException):
+    @property
+    def message(self):
+        return 'Wrong test id'

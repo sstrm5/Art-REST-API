@@ -5,7 +5,7 @@ from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.services.customers import BaseCustomerService
 
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
-from core.apps.questions.exceptions.questions import TestSessionDoesNotExistException, TestSessionNotOverException, TestAlreadyStartedException, WrongAccessTokenException
+from core.apps.questions.exceptions.questions import TestSessionAlreadyExistsException, TestSessionDoesNotExistException, TestSessionNotOverException, TestAlreadyStartedException, WrongAccessTokenException, WrongTestException
 from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
 from core.apps.questions.services.test_sessions import BaseTestSessionService
@@ -192,7 +192,9 @@ class CreateAttemptUseCase:
             # raise TestAlreadyStartedException()
             attempt = self.attempt_service.get_last_attempt(
                 user_id=customer.id)
-            return attempt
+            if attempt.test_id == test_id:
+                return attempt
+            raise TestSessionAlreadyExistsException()
         attempt = self.attempt_service.create_attempt(
             customer=customer,
             test_id=test_id,
@@ -227,7 +229,13 @@ class UpdateAttemptAnswersUseCase:
     attempt_service: BaseAttemptService
     test_session_service: BaseTestSessionService
 
-    def execute(self, user_answers: dict[str, list[str]], token: str, device_info: str):
+    def execute(
+            self,
+            user_answers: dict[str, list[str]],
+            token: str,
+            test_id: int,
+            device_info: str,
+    ):
         customer = self.customer_service.get_by_token(
             token=token,
             device_info=device_info,
@@ -236,8 +244,11 @@ class UpdateAttemptAnswersUseCase:
         if not self.test_session_service.is_session_exists(user_id=customer.id):
             raise TestSessionDoesNotExistException()
 
-        test_id = self.test_session_service.find_out_the_current_test(
+        cur_test_id = self.test_session_service.find_out_the_current_test(
             user_id=customer.id)
+
+        if test_id != cur_test_id:
+            raise WrongTestException()
 
         attempt = self.attempt_service.update_attempt(
             user_id=customer.id,
@@ -255,7 +266,6 @@ class GetCurrentTestUseCase:
     def execute(
             self,
             token: str,
-            test_id: int,
             device_info: str,
     ):
         customer = self.customer_service.get_by_token(
