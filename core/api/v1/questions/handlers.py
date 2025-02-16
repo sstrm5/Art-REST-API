@@ -16,6 +16,7 @@ from core.apps.questions.use_cases import (
     CreateAttemptUseCase,
     CreateTestUseCase,
     EndAttemptUseCase,
+    GetAttemptInfoUseCase,
     GetAttemptListByCustomerUseCase,
     GetAttemptListUseCase,
     GetCurrentTestUseCase,
@@ -30,6 +31,8 @@ from ninja.files import UploadedFile
 from core.api.schemas import ApiResponse, ListResponse
 from core.api.v1.questions.schemas import (
     AnswersOut,
+    AttemptIDSchema,
+    AttemptInfoSchema,
     AttemptSchemaIn,
     AttemptSchemaOut,
     AttemptSchemaOutWithName,
@@ -147,6 +150,7 @@ def end_attempt_handler(
         test_service=container.resolve(BaseTestService),
         question_service=container.resolve(BaseQuestionService),
         test_session_service=container.resolve(BaseTestSessionService),
+        attempt_service=container.resolve(BaseAttemptService),
     )
 
     try:
@@ -192,6 +196,32 @@ def get_last_result_handler(
         user_answers=user_answers,
         total_score=total_score,
     ))
+
+
+@router.post('/attempt/info', response={200: ApiResponse[AttemptInfoSchema]})
+def get_info_about_attempt(
+    request,
+    schema: AttemptIDSchema,
+    token: str = Header(alias='Auth-Token'),
+):
+    container = get_container()
+    use_case = GetAttemptInfoUseCase(
+        attempt_service=container.resolve(BaseAttemptService),
+        customer_service=container.resolve(BaseCustomerService),
+        test_service=container.resolve(BaseTestService),
+        question_service=container.resolve(BaseQuestionService),
+    )
+    try:
+        # сущность попытки с включенной информацией о вопросах, кол-ве вопросов, правильных овтетов
+        attempt = use_case.execute(
+            attempt_id=schema.attempt_id,
+            token=token,
+            device_info=request.META["HTTP_USER_AGENT"],
+        )
+    except ServiceException as exception:
+        raise HttpError(status_code=400, message=exception.message)
+
+    return ApiResponse(data=AttemptInfoSchema.from_entity(attempt))
 
 
 @router.get('/{test_id}/attempts', response=ApiResponse[ListResponse[AttemptSchemaOutWithName]], summary='Получить список попыток всех пользователей на конкретный тест📜')

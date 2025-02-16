@@ -183,6 +183,13 @@ class ORMTestService(BaseTestService):
     def get_subjects(self):
         return [subject.to_entity() for subject in Subject.objects.filter(is_visible=True)]
 
+    def get_by_id(self, test_id: int):
+        try:
+            test = TestModel.objects.get(id=test_id)
+        except:
+            raise TestNotFoundException()
+        return test.to_entity()
+
 
 class ORMQuestionService(BaseQuestionService):
     def get_question_list(self, test_id) -> Iterable[Question]:

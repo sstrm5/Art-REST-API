@@ -1,5 +1,5 @@
 from django.http import HttpRequest
-from core.api.v1.questions.schemas import AttemptSchemaOut, CheckUserExistenceIn, CheckUserExistenceOut
+from core.api.v1.questions.schemas import AttemptCustomerInfoSchema, CheckUserExistenceIn, CheckUserExistenceOut
 from core.apps.customers.use_cases import GetInfoAboutUserUseCase
 from core.apps.questions.containers import get_container
 from core.apps.questions.services.attempts import BaseAttemptService
@@ -20,6 +20,7 @@ from core.api.v1.customers.schemas import (
 from core.apps.common.exceptions import ServiceException
 from core.apps.customers.services.auth import BaseAuthService
 from core.apps.customers.services.customers import BaseCustomerService
+from core.apps.questions.services.questions import BaseTestService
 
 
 router = Router(tags=['Customers👨‍💻'])
@@ -125,13 +126,14 @@ def get_info_about_user_handler(
     container = get_container()
     use_case = GetInfoAboutUserUseCase(
         customer_service=container.resolve(BaseCustomerService),
-        attempt_service=container.resolve(BaseAttemptService)
+        attempt_service=container.resolve(BaseAttemptService),
+        test_service=container.resolve(BaseTestService),
     )
     user_id, avatar_path, user_name, user_email, user_created_at, user_attempts = use_case.execute(
         token=token,
         device_info=request.META["HTTP_USER_AGENT"],
     )
-    user_attempts = [AttemptSchemaOut.from_entity(
+    user_attempts = [AttemptCustomerInfoSchema.from_entity(
         attempt) for attempt in user_attempts]
     return ApiResponse(data=UserInfoSchema(
         id=user_id,

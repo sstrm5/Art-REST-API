@@ -1,5 +1,5 @@
 from datetime import datetime
-from core.api.v1.questions.schemas import AttemptSchemaOut
+from core.api.v1.questions.schemas import AttemptCustomerInfoSchema
 from ninja import Schema
 
 
@@ -45,4 +45,4 @@ class UserInfoSchema(Schema):
     user_name: str
     user_email: str
     user_created_at: datetime
-    user_attempts: list[AttemptSchemaOut]
+    user_attempts: list[AttemptCustomerInfoSchema]

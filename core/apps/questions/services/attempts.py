@@ -105,3 +105,23 @@ class ORMAttemptService(BaseAttemptService):
         if not attempt:
             raise AttemptDoesNotExistException()
         return attempt.to_entity()
+
+    def get_by_id(self, attempt_id: int):
+        attempt = AttemptModel.objects.filter(id=attempt_id).first()
+        if not attempt:
+            raise AttemptDoesNotExistException()
+        return attempt.to_entity()
+
+    def update_end_time(
+            self,
+            user_id: int,
+            end_time: datetime,
+            time_spent: timedelta,
+    ):
+        attempt = AttemptModel.objects.filter(
+            user_id=user_id).order_by('-created_at').first()
+        if not attempt:
+            raise AttemptDoesNotExistException()
+        attempt.end_time = str(end_time)
+        attempt.time_spent = str(time_spent)
+        attempt.save()

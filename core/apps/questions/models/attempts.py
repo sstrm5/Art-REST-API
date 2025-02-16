@@ -29,6 +29,11 @@ class Attempt(TimedBaseModel):
         null=True,
     )
 
+    time_spent = models.TimeField(
+        verbose_name='Время прохождения теста',
+        null=True,
+    )
+
     user_answers = models.JSONField(
         verbose_name='Ответы пользователя',
     )
@@ -48,6 +53,7 @@ class Attempt(TimedBaseModel):
             user_id=self.user.pk,
             test_id=self.test.pk,
             end_time=self.end_time,
+            time_spent=self.time_spent,
             user_answers=self.user_answers,
             total_score=self.total_score,
             created_at=self.created_at,

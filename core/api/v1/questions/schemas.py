@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Generic, TypeVar
+from datetime import datetime, time
+from typing import Generic, Optional, TypeVar
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
 
 from ninja import Schema
@@ -115,6 +115,29 @@ class AttemptUpdateSchema(Schema):
     test_id: int
 
 
+class AttemptCustomerInfoSchema(Schema):
+    attempt_id: int
+    test_id: int
+    test_title: str
+    question_count: int
+    total_score: int
+    end_time: datetime
+    time_spent: Optional[time]
+    created_at: datetime
+
+    def from_entity(entity: AttemptEntity) -> 'AttemptCustomerInfoSchema':
+        return AttemptCustomerInfoSchema(
+            attempt_id=entity.id,
+            test_id=entity.test_id,  # добавляю в customers.use_cases
+            test_title=entity.test_title,  # добавляю в customers.use_cases
+            question_count=entity.question_count,
+            total_score=entity.total_score,
+            end_time=entity.end_time,
+            time_spent=entity.time_spent,
+            created_at=entity.created_at,
+        )
+
+
 class AttemptSchemaOut(Schema):
     test_id: int
     user_answers: dict[str, list[str]]
@@ -123,7 +146,10 @@ class AttemptSchemaOut(Schema):
 
     def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
         return AttemptSchemaOut(
+            id=entity.id,
             test_id=entity.test_id,
+            end_time=entity.end_time,
+            time_spent=entity.time_spent,
             user_answers=entity.user_answers,
             total_score=entity.total_score,
             created_at=entity.created_at,
@@ -157,3 +183,35 @@ class LastAttemptResultSchema(Schema):
     correct_answers: dict[str, list[str]]
     user_answers: dict[str, list[str]]
     total_score: int
+
+
+class AttemptInfoSchema(Schema):
+    attempt_id: int
+    test_id: int
+    end_time: datetime
+    time_spent: Optional[time]
+    user_answers: dict[str, list[str]]
+    total_score: int
+    question_count: int
+    question_list: list[QuestionSchemaOut]
+    correct_answers: dict[str, list[str]]
+    created_at: datetime
+
+    def from_entity(entity: AttemptEntity) -> 'AttemptInfoSchema':
+        return AttemptInfoSchema(
+            attempt_id=entity.id,
+            test_id=entity.test_id,
+            end_time=entity.end_time,
+            time_spent=entity.time_spent,
+            user_answers=entity.user_answers,
+            total_score=entity.total_score,
+            question_count=entity.question_count,
+            question_list=[QuestionSchemaOut.from_entity(
+                obj) for obj in entity.question_list],
+            correct_answers=entity.correct_answers,
+            created_at=entity.created_at,
+        )
+
+
+class AttemptIDSchema(Schema):
+    attempt_id: int
