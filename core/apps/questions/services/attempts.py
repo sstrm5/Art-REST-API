@@ -71,10 +71,10 @@ class ORMAttemptService(BaseAttemptService):
         # номер последней попытки = кол-во попыток пользователя пройти тест
         attempt_number = AttemptModel.objects.filter(
             user=customer, test=test).count()
-        attempt = AttemptModel.objects.get(
+        attempt = AttemptModel.objects.filter(
             user=customer,
             test=test,
-            attempt_number=attempt_number)
+            attempt_number=attempt_number).first()
         if not user_answers:
             return attempt.to_entity()
         attempt.user_answers = user_answers
