@@ -40,7 +40,6 @@ class ORMTestSessionService(BaseTestSessionService):
     def find_out_the_current_test(self, user_id: int):
         current_test = TestSessionModel.objects.filter(
             user__id=user_id).first()
-        print(current_test.test.id)
         if not current_test:
             return -1
         return current_test.test.id

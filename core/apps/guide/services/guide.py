@@ -22,3 +22,7 @@ class CardService(BaseCardService):
     def get_cards_by_subject(self, subject_title: str) -> list[CardEntity]:
         cards = Card.objects.filter(subject__title=subject_title)
         return [card.to_entity() for card in cards]
+
+    def get_card_by_id(self, card_id: int):
+        card = Card.objects.get(id=card_id)
+        return card.to_entity()

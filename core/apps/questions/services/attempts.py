@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Iterable
-
 from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.models import Customer as CustomerModel
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
 from core.apps.questions.exceptions.questions import AttemptDoesNotExistException, TestNotFoundException
 from core.apps.questions.models.attempts import Attempt as AttemptModel
 from core.apps.questions.models.questions import Test as TestModel
+import json
 
 
 class BaseAttemptService(ABC):
@@ -125,4 +125,18 @@ class ORMAttemptService(BaseAttemptService):
             raise AttemptDoesNotExistException()
         attempt.end_time = str(end_time)
         attempt.time_spent = str(time_spent)
+        attempt.save()
+
+    def fill_blank_answers(
+            self,
+            attempt_id: int,
+            question_count: int,
+    ):
+        attempt = AttemptModel.objects.get(id=attempt_id)
+        user_answers = attempt.user_answers
+        for question_number in range(1, question_count + 1):
+            question_number = str(question_number)
+            if question_number not in user_answers.keys():
+                user_answers[question_number] = []
+        attempt.user_answers = user_answers
         attempt.save()

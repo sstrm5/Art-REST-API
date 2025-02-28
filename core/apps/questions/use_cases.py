@@ -99,11 +99,21 @@ class EndAttemptUseCase:
             question_list=question_list,
         )
 
+        current_attempt = self.attempt_service.get_last_attempt(
+            user_id=customer.id)
+
         self.attempt_service.update_end_time(
             user_id=customer.id,
             end_time=datetime.now(timezone.utc),
             time_spent=datetime.now(
-                timezone.utc) - self.attempt_service.get_last_attempt(user_id=customer.id).created_at,
+                timezone.utc) - current_attempt.created_at,
+        )
+
+        question_count = len(question_list)
+
+        self.attempt_service.fill_blank_answers(
+            attempt_id=current_attempt.id,
+            question_count=question_count,
         )
 
         self.customer_service.change_status(
