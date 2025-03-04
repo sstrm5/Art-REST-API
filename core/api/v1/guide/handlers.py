@@ -2,6 +2,7 @@ from ninja import router
 from ninja.errors import HttpError
 from core.api.schemas import ApiResponse, ListResponse
 from core.api.v1.guide.schemas import GuideSchema
+from core.apps.common.exceptions import ServiceException
 from core.apps.guide import containers
 from core.apps.guide.services.guide import BaseCardService
 from core.apps.guide.use_cases import GetDetailInfoGuideCard
@@ -14,9 +15,12 @@ router = router.Router(tags=['Guide cards📕'])
 def list_guide_cards_handler(request):
     container = containers.get_container()
     card_service = container.resolve(BaseCardService)
+    try:
+        cards = card_service.get_all_cards()
+        items = [GuideSchema.from_entity(card) for card in cards]
+    except ServiceException as e:
+        return HttpError(status_code=400, message=e.message)
 
-    cards = card_service.get_all_cards()
-    items = [GuideSchema.from_entity(card) for card in cards]
     return ApiResponse(data=ListResponse(items=items))
 
 
@@ -33,7 +37,7 @@ def get_detail_guide_card(
 
     try:
         card = use_case.execute(card_id=id)
-    except Exception as exception:
-        return HttpError(status_code=400, message=exception.message)
+    except ServiceException as e:
+        raise HttpError(status_code=400, message=e.message)
 
     return ApiResponse(data=GuideSchema.from_entity(card))

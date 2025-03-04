@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from core.apps.guide.entities.guide import Card as CardEntity
+from core.apps.guide.exceptions import CardDoesNotExistException
 from core.apps.guide.models import Card
 
 
@@ -24,5 +25,8 @@ class CardService(BaseCardService):
         return [card.to_entity() for card in cards]
 
     def get_card_by_id(self, card_id: int):
-        card = Card.objects.get(id=card_id)
+        try:
+            card = Card.objects.get(id=card_id)
+        except:
+            raise CardDoesNotExistException()
         return card.to_entity()

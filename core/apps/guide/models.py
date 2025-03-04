@@ -29,6 +29,7 @@ class Card(TimedBaseModel):
 
     def to_entity(self) -> CardEntity:
         return CardEntity(
+            id=self.pk,
             title=self.title,
             subject=self.subject.subject,
             text=self.text,
