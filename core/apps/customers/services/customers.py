@@ -1,30 +1,44 @@
+import os
 from abc import ABC, abstractmethod
 import time
 from uuid import uuid4
 
+from ninja import UploadedFile
+
 from core.apps.customers.customer_session_model import CustomerSession
 from core.apps.customers.entities import CustomerEntity
-from core.apps.customers.exceptions.customer_sessions import SessionDoesNotExistException
-from core.apps.customers.exceptions.customers import AccessTokenExcpiredException, RefreshTokenExpiredException, RefreshTokenNotFoundException
+from core.apps.customers.exceptions.customer_sessions import (
+    SessionDoesNotExistException,
+)
+from core.apps.customers.exceptions.customers import (
+    AccessTokenExcpiredException,
+    RefreshTokenExpiredException,
+    RefreshTokenNotFoundException,
+    CustomerDoesNotExist,
+)
 from core.apps.customers.models import Customer
 
 
 class BaseCustomerService(ABC):
     @abstractmethod
-    def get_or_create(self, email: str, first_name: str, last_name: str) -> CustomerEntity:
-        ...
-
+    def get_or_create(
+        self, email: str, first_name: str, last_name: str
+    ) -> CustomerEntity: ...
     @abstractmethod
-    def get_by_email(self, email: str) -> CustomerEntity:
-        ...
-
+    def get_by_email(self, email: str) -> CustomerEntity: ...
     @abstractmethod
-    def generate_token(self, customer: CustomerEntity) -> str:
-        ...
+    def generate_token(self, customer: CustomerEntity, device_info: str) -> str: ...
+    def get_by_token_and_device(self, token, device_info): ...
+    def get_by_token(self, token): ...
+    def change_avatar(self, customer, avatar_path): ...
+    def change_name(self, customer, first_name, last_name): ...
+    def save_avatar(self, image_file, customer): ...
 
 
 class ORMCustomerService(BaseCustomerService):
-    def get_or_create(self, email: str, first_name: str, last_name: str) -> CustomerEntity:
+    def get_or_create(
+        self, email: str, first_name: str, last_name: str
+    ) -> CustomerEntity:
         customer, _ = Customer.objects.get_or_create(
             email=email,
             first_name=first_name,
@@ -37,9 +51,20 @@ class ORMCustomerService(BaseCustomerService):
         customer = Customer.objects.get(email=email)
         return customer.to_entity()
 
-    def get_by_token(self, token: str, device_info: str) -> CustomerEntity:
+    def get_by_token_and_device(self, token: str, device_info: str) -> CustomerEntity:
         session = CustomerSession.objects.filter(
-            access_token=token, device_info=device_info).first()
+            access_token=token, device_info=device_info
+        ).first()
+        if session:
+            customer = session.customer
+            current_time = int(time.time())
+            if current_time < session.expires_in:
+                return customer.to_entity()
+            raise AccessTokenExcpiredException()
+        raise SessionDoesNotExistException()
+
+    def get_by_token(self, token: str):
+        session = CustomerSession.objects.filter(access_token=token).first()
         if session:
             customer = session.customer
             current_time = int(time.time())
@@ -73,9 +98,9 @@ class ORMCustomerService(BaseCustomerService):
         return new_access_token, new_refresh_token, expires_in
 
     def refresh_token(self, refresh_token: str, device_info: str):
-        # customer = Customer.objects.get(refresh_token=refresh_token)
         session = CustomerSession.objects.filter(
-            refresh_token=refresh_token, device_info=device_info).first()
+            refresh_token=refresh_token, device_info=device_info
+        ).first()
         if session:
             current_time = int(time.time())
             if current_time < session.refresh_expires_in:
@@ -97,6 +122,33 @@ class ORMCustomerService(BaseCustomerService):
             raise RefreshTokenNotFoundException()
 
     def change_status(self, customer: CustomerEntity, in_process: bool):
-        Customer.objects.filter(email=customer.email).update(
-            in_process=in_process)
+        Customer.objects.filter(email=customer.email).update(in_process=in_process)
         return customer.in_process
+
+    # TODO: Сжать картинку
+    def save_avatar(self, image_file: UploadedFile, customer: CustomerEntity):
+        if not os.path.exists("media/customers"):
+            os.makedirs("media/customers")
+        extension = image_file.name.split(".")[-1]
+        new_file_path = f"customers/{customer.id}.{extension}"
+        with open(f"media/{new_file_path}", "wb") as f:
+            for chunk in image_file.chunks():
+                f.write(chunk)
+        return new_file_path
+
+    def change_avatar(self, customer: CustomerEntity, avatar_path: str):
+        customer = Customer.objects.filter(id=customer.id).first()
+        if not customer:
+            raise CustomerDoesNotExist()
+        customer.picture = avatar_path
+        customer.save()
+
+    def change_name(self, customer: CustomerEntity, first_name: str, last_name: str):
+        customer = Customer.objects.filter(id=customer.id).first()
+        if not customer:
+            raise CustomerDoesNotExist()
+        if first_name:
+            customer.first_name = first_name
+        if last_name:
+            customer.last_name = last_name
+        customer.save()

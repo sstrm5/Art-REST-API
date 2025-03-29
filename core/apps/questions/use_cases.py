@@ -5,7 +5,13 @@ from core.apps.customers.entities import CustomerEntity
 from core.apps.customers.services.customers import BaseCustomerService
 
 from core.apps.questions.entities.attempts import Attempt as AttemptEntity
-from core.apps.questions.exceptions.questions import TestSessionAlreadyExistsException, TestSessionDoesNotExistException, TestSessionNotOverException, WrongAccessTokenException, WrongTestException
+from core.apps.questions.exceptions.questions import (
+    TestSessionAlreadyExistsException,
+    TestSessionDoesNotExistException,
+    TestSessionNotOverException,
+    WrongAccessTokenException,
+    WrongTestException,
+)
 from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
 from core.apps.questions.services.test_sessions import BaseTestSessionService
@@ -19,21 +25,21 @@ class CreateTestUseCase:
     customer_service: BaseCustomerService
 
     def execute(
-            self,
-            subject: str,
-            title: str,
-            description: str,
-            work_time: int,
-            questions: list[QuestionDataSchemaIn],
-            token: str,
-            device_info: str,
-            file,
+        self,
+        subject: str,
+        title: str,
+        description: str,
+        work_time: int,
+        questions: list[QuestionDataSchemaIn],
+        token: str,
+        device_info: str,
+        file,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
-        if not customer or customer.role != 'ADMIN':
+        if not customer or customer.role != "ADMIN":
             raise WrongAccessTokenException("Invalid access token")
 
         file_path = self.test_service.add_picture_to_test(file=file)
@@ -46,7 +52,6 @@ class CreateTestUseCase:
                 work_time=work_time,
                 questions=questions,
                 file_path=file_path,
-
             )
         except Exception as error:
             raise error
@@ -59,10 +64,8 @@ class GetTestUseCase:
     question_service: BaseQuestionService
 
     def execute(self, test_id: int):
-        question_list = self.question_service.get_question_list(
-            test_id=test_id)
-        test_duration = self.test_service.get_test_duration(
-            test_id=test_id)
+        question_list = self.question_service.get_question_list(test_id=test_id)
+        test_duration = self.test_service.get_test_duration(test_id=test_id)
         return question_list, test_duration
 
 
@@ -75,11 +78,11 @@ class EndAttemptUseCase:
     attempt_service: BaseAttemptService
 
     def execute(
-            self,
-            token: str,
-            device_info: str,
+        self,
+        token: str,
+        device_info: str,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
@@ -88,10 +91,10 @@ class EndAttemptUseCase:
             raise TestSessionDoesNotExistException()
 
         test_id = self.test_session_service.find_out_the_current_test(
-            user_id=customer.id)
+            user_id=customer.id
+        )
 
-        question_list = self.question_service.get_question_list(
-            test_id=test_id)
+        question_list = self.question_service.get_question_list(test_id=test_id)
 
         self.test_service.check_test(
             customer=customer,
@@ -99,14 +102,12 @@ class EndAttemptUseCase:
             question_list=question_list,
         )
 
-        current_attempt = self.attempt_service.get_last_attempt(
-            user_id=customer.id)
+        current_attempt = self.attempt_service.get_last_attempt(user_id=customer.id)
 
         self.attempt_service.update_end_time(
             user_id=customer.id,
             end_time=datetime.now(timezone.utc),
-            time_spent=datetime.now(
-                timezone.utc) - current_attempt.created_at,
+            time_spent=datetime.now(timezone.utc) - current_attempt.created_at,
         )
 
         question_count = len(question_list)
@@ -116,8 +117,7 @@ class EndAttemptUseCase:
             question_count=question_count,
         )
 
-        self.customer_service.change_status(
-            customer=customer, in_process=False)
+        self.customer_service.change_status(customer=customer, in_process=False)
         self.test_session_service.delete_session_by_user(user_id=customer.id)
 
         return test_id
@@ -132,11 +132,11 @@ class GetLastAttemptResultUseCase:
     test_service: BaseTestService
 
     def execute(
-            self,
-            token: str,
-            device_info: str,
+        self,
+        token: str,
+        device_info: str,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
@@ -146,10 +146,13 @@ class GetLastAttemptResultUseCase:
 
         attempt = self.attempt_service.get_last_attempt(user_id=customer.id)
 
-        test_id, user_answers, total_score = attempt.test_id, attempt.user_answers, attempt.total_score
+        test_id, user_answers, total_score = (
+            attempt.test_id,
+            attempt.user_answers,
+            attempt.total_score,
+        )
 
-        question_list = self.question_service.get_question_list(
-            test_id=test_id)
+        question_list = self.question_service.get_question_list(test_id=test_id)
 
         correct_answers = self.test_service.get_correct_answers(
             test_id=test_id,
@@ -166,7 +169,8 @@ class GetAttemptListUseCase:
 
     def execute(self, test_id: int):
         attempt_list: list[AttemptEntity] = self.attempt_service.get_attempt_list(
-            test_id=test_id)
+            test_id=test_id
+        )
         attempt_list_with_customer_name = []
         for attempt_entity in attempt_list:
             user_id = attempt_entity.user_id
@@ -182,9 +186,11 @@ class GetAttemptListByCustomerUseCase:
     customer_service: BaseCustomerService
 
     def execute(self, test_id: int, token: str):
-        attempt_list: list[AttemptEntity] = self.attempt_service.get_attempt_list_by_customer(
-            test_id=test_id,
-            token=token,
+        attempt_list: list[AttemptEntity] = (
+            self.attempt_service.get_attempt_list_by_customer(
+                test_id=test_id,
+                token=token,
+            )
         )
         return attempt_list
 
@@ -197,19 +203,17 @@ class CreateAttemptUseCase:
     test_service: BaseTestService
 
     def execute(
-            self,
-            token: str,
-            test_id: int,
-            device_info: str,
+        self,
+        token: str,
+        test_id: int,
+        device_info: str,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
         if self.test_session_service.is_session_exists(user_id=customer.id):
-            # raise TestAlreadyStartedException()
-            attempt = self.attempt_service.get_last_attempt(
-                user_id=customer.id)
+            attempt = self.attempt_service.get_last_attempt(user_id=customer.id)
             if attempt.test_id == test_id:
                 return attempt
             raise TestSessionAlreadyExistsException()
@@ -217,17 +221,16 @@ class CreateAttemptUseCase:
             customer=customer,
             test_id=test_id,
         )
-        self.test_session_service.create_session(
-            user_id=customer.id, test_id=test_id)
+        self.test_session_service.create_session(user_id=customer.id, test_id=test_id)
         self.customer_service.change_status(customer=customer, in_process=True)
 
-        # end_time = attempt.end_time
         test_duration = self.test_service.get_test_duration(test_id=test_id)
 
         # Отложенная celery задача
-        auto_submit_test.apply_async(kwargs={
-                                     "token": token, "device_info": device_info},
-                                     eta=datetime.now(timezone.utc) + timedelta(minutes=test_duration))
+        auto_submit_test.apply_async(
+            kwargs={"token": token, "device_info": device_info},
+            eta=datetime.now(timezone.utc) + timedelta(minutes=test_duration),
+        )
 
         return attempt
 
@@ -248,13 +251,13 @@ class UpdateAttemptAnswersUseCase:
     test_session_service: BaseTestSessionService
 
     def execute(
-            self,
-            user_answers: dict[str, list[str]],
-            token: str,
-            test_id: int,
-            device_info: str,
+        self,
+        user_answers: dict[str, list[str]],
+        token: str,
+        test_id: int,
+        device_info: str,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
@@ -263,7 +266,8 @@ class UpdateAttemptAnswersUseCase:
             raise TestSessionDoesNotExistException()
 
         cur_test_id = self.test_session_service.find_out_the_current_test(
-            user_id=customer.id)
+            user_id=customer.id
+        )
 
         if test_id != cur_test_id:
             raise WrongTestException()
@@ -282,11 +286,11 @@ class GetCurrentTestUseCase:
     customer_service: BaseCustomerService
 
     def execute(
-            self,
-            token: str,
-            device_info: str,
+        self,
+        token: str,
+        device_info: str,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
@@ -295,7 +299,8 @@ class GetCurrentTestUseCase:
             raise TestSessionDoesNotExistException()
 
         test_id = self.test_session_service.find_out_the_current_test(
-            user_id=customer.id)
+            user_id=customer.id
+        )
         return test_id
 
 
@@ -307,12 +312,12 @@ class GetAttemptInfoUseCase:
     question_service: BaseQuestionService
 
     def execute(
-            self,
-            token: str,
-            device_info: str,
-            attempt_id: int,
+        self,
+        token: str,
+        device_info: str,
+        attempt_id: int,
     ):
-        customer = self.customer_service.get_by_token(
+        customer = self.customer_service.get_by_token_and_device(
             token=token,
             device_info=device_info,
         )
@@ -321,8 +326,7 @@ class GetAttemptInfoUseCase:
         if customer.id != attempt.user_id:
             raise WrongAccessTokenException()
 
-        question_list = self.question_service.get_question_list(
-            test_id=attempt.test_id)
+        question_list = self.question_service.get_question_list(test_id=attempt.test_id)
         question_count = len(question_list)
         correct_answers = self.test_service.get_correct_answers(
             test_id=attempt.test_id,

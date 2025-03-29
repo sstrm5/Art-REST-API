@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+
 from core.api.v1.questions.schemas import AttemptCustomerInfoSchema
 from ninja import Schema
 
@@ -46,3 +48,8 @@ class UserInfoSchema(Schema):
     user_email: str
     user_created_at: datetime
     user_attempts: list[AttemptCustomerInfoSchema]
+
+
+class CustomerUpdateInSchema(Schema):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
