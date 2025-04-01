@@ -7,12 +7,9 @@ from core.apps.guide.models import Card
 
 class BaseCardService(ABC):
     @abstractmethod
-    def get_all_cards(self) -> list[CardEntity]:
-        ...
-
+    def get_all_cards(self) -> list[CardEntity]: ...
     @abstractmethod
-    def get_cards_by_subject(self, subject_title: str) -> list[CardEntity]:
-        ...
+    def get_cards_by_subject(self, subject_title: str) -> list[CardEntity]: ...
 
 
 class CardService(BaseCardService):

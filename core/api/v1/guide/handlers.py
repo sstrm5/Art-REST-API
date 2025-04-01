@@ -5,13 +5,16 @@ from core.api.v1.guide.schemas import GuideSchema
 from core.apps.common.exceptions import ServiceException
 from core.apps.guide import containers
 from core.apps.guide.services.guide import BaseCardService
-from core.apps.guide.use_cases import GetDetailInfoGuideCard
+from core.apps.guide.use_cases import GetDetailInfoGuideCard, SearchCardsUseCase
+
+router = router.Router(tags=["Guide cards📕"])
 
 
-router = router.Router(tags=['Guide cards📕'])
-
-
-@router.get('', response=ApiResponse[ListResponse[GuideSchema]], summary='Получить список карточек📜')
+@router.get(
+    "",
+    response=ApiResponse[ListResponse[GuideSchema]],
+    summary="Получить список карточек📜",
+)
 def list_guide_cards_handler(request):
     container = containers.get_container()
     card_service = container.resolve(BaseCardService)

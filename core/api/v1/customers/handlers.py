@@ -219,8 +219,9 @@ def customer_update_handler(
     token: str = Header(alias="Auth-Token"),
     file: UploadedFile = File(alias="image", default=None),
 ) -> ApiResponse:
+    container = get_container()
     use_case = UpdateCustomerInfoUseCase(
-        customer_service=ORMCustomerService(),
+        customer_service=container.resolve(BaseCustomerService),
     )
     customer = use_case.execute(
         token=token,
