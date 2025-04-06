@@ -1,3 +1,4 @@
+from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
@@ -28,6 +29,8 @@ class Card(TimedBaseModel):
         null=True,
     )
 
+    search_vector = SearchVectorField(null=True, blank=True)
+
     def to_entity(self) -> CardEntity:
         return CardEntity(
             id=self.pk,
@@ -41,5 +44,7 @@ class Card(TimedBaseModel):
         return self.title
 
     class Meta:
+        indexes = [GinIndex(fields=["search_vector"])]
+
         verbose_name = "Карточка"
         verbose_name_plural = "Карточки"
