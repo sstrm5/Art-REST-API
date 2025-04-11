@@ -27,7 +27,7 @@ class Customer(TimedBaseModel):
 
     picture = models.ImageField(
         verbose_name="Изображение профиля",
-        upload_to="customers/pofile_pictures",
+        upload_to="customers",
         blank=True,
         null=True,
     )
