@@ -125,15 +125,25 @@ class ORMCustomerService(BaseCustomerService):
         Customer.objects.filter(email=customer.email).update(in_process=in_process)
         return customer.in_process
 
-    # TODO: Сжать картинку
     def save_avatar(self, image_file: UploadedFile, customer: CustomerEntity):
+        # создание папки с аватарками, если нет
         if not os.path.exists("media/customers"):
             os.makedirs("media/customers")
+
+        # парсинг расширения
         extension = image_file.name.split(".")[-1]
-        new_file_path = f"customers/{customer.id}.{extension}"
+        if extension.lower() == "jpg":
+            extension = "jpeg"
+
+        # создание нового имени файла
+        timestamp = int(time.time())
+        new_filename = f"{customer.id}?{timestamp}"
+        new_file_path = f"customers/{new_filename}.{extension}"
+
         with open(f"media/{new_file_path}", "wb") as f:
             for chunk in image_file.chunks():
                 f.write(chunk)
+        compress_image(path=f"media/{new_file_path}", extension=extension)
         return new_file_path
 
     def change_avatar(self, customer: CustomerEntity, avatar_path: str):

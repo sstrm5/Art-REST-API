@@ -299,7 +299,12 @@ class GetCurrentTestUseCase:
         test_id = self.test_session_service.find_out_the_current_test(
             user_id=customer.id
         )
-        return test_id
+
+        start_time = self.test_session_service.get_test_start_time(user_id=customer.id)
+
+        duration = self.test_session_service.get_test_duration(user_id=customer.id)
+
+        return test_id, start_time, duration
 
 
 @dataclass

@@ -7,25 +7,25 @@ from core.apps.questions.models.test_sessions import TestSession as TestSessionM
 
 class BaseTestSessionService:
     @abstractmethod
-    def create_session(self, user_id: int, test_id: int) -> TestSessionEntity:
-        ...
+    def create_session(self, user_id: int, test_id: int) -> TestSessionEntity: ...
 
     @abstractmethod
-    def get_session_by_user_and_test(self, user_id: int, test_id: int) -> TestSessionEntity:
-        ...
+    def get_session_by_user_and_test(
+        self, user_id: int, test_id: int
+    ) -> TestSessionEntity: ...
 
 
 class ORMTestSessionService(BaseTestSessionService):
     def create_session(self, user_id, test_id) -> TestSessionEntity:
         if TestSessionModel.objects.filter(user_id=user_id, test_id=test_id).exists():
             raise TestSessionAlreadyExistsException()
-        session = TestSessionModel.objects.create(
-            user_id=user_id, test_id=test_id)
+        session = TestSessionModel.objects.create(user_id=user_id, test_id=test_id)
         return session.to_entity()
 
     def get_session_by_user_and_test(self, user_id, test_id) -> TestSessionEntity:
         session = TestSessionModel.objects.filter(
-            user_id=user_id, test_id=test_id).first()
+            user_id=user_id, test_id=test_id
+        ).first()
         if not session:
             return None
         return session.to_entity()
@@ -38,8 +38,19 @@ class ORMTestSessionService(BaseTestSessionService):
         return TestSessionModel.objects.filter(user_id=user_id).exists()
 
     def find_out_the_current_test(self, user_id: int):
-        current_test = TestSessionModel.objects.filter(
-            user__id=user_id).first()
-        if not current_test:
+        current_test_session = TestSessionModel.objects.filter(user__id=user_id).first()
+        if not current_test_session:
             return -1
-        return current_test.test.id
+        return current_test_session.test.id
+
+    def get_test_start_time(self, user_id: int):
+        current_test_session = TestSessionModel.objects.filter(user__id=user_id).first()
+        if not current_test_session:
+            return -1
+        return current_test_session.created_at
+
+    def get_test_duration(self, user_id: int):
+        current_test_session = TestSessionModel.objects.filter(user__id=user_id).first()
+        if not current_test_session:
+            return -1
+        return current_test_session.test.work_time

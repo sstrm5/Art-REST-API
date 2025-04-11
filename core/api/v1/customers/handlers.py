@@ -212,7 +212,7 @@ def get_info_about_user_handler(
     )
 
 
-@router.post("/customer_update", response=ApiResponse)
+@router.patch("/customer_update", response=ApiResponse)
 def customer_update_handler(
     request: HttpRequest,
     schema: CustomerUpdateInSchema,

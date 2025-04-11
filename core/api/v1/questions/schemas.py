@@ -26,7 +26,7 @@ class TestSchemaOut(Schema):
     updated_at: datetime | None = None
 
     @staticmethod
-    def from_entity(entity: TestEntity) -> 'TestSchemaOut':
+    def from_entity(entity: TestEntity) -> "TestSchemaOut":
         return TestSchemaOut(
             id=entity.id,
             title=entity.title,
@@ -53,7 +53,7 @@ class QuestionSchemaOut(Schema):
     updated_at: datetime | None = None
 
     @staticmethod
-    def from_entity(entity: QuestionEntity) -> 'QuestionSchemaOut':
+    def from_entity(entity: QuestionEntity) -> "QuestionSchemaOut":
         return QuestionSchemaOut(
             id=entity.id,
             test_id=entity.test_id,
@@ -125,7 +125,7 @@ class AttemptCustomerInfoSchema(Schema):
     time_spent: Optional[time]
     created_at: datetime
 
-    def from_entity(entity: AttemptEntity) -> 'AttemptCustomerInfoSchema':
+    def from_entity(entity: AttemptEntity) -> "AttemptCustomerInfoSchema":
         return AttemptCustomerInfoSchema(
             attempt_id=entity.id,
             test_id=entity.test_id,  # добавляю в customers.use_cases
@@ -144,7 +144,7 @@ class AttemptSchemaOut(Schema):
     total_score: int
     created_at: datetime
 
-    def from_entity(entity: AttemptEntity) -> 'AttemptSchemaOut':
+    def from_entity(entity: AttemptEntity) -> "AttemptSchemaOut":
         return AttemptSchemaOut(
             id=entity.id,
             test_id=entity.test_id,
@@ -175,6 +175,8 @@ class AnswersOut(Schema):
 
 class CurrentTestIdSchema(Schema):
     test_id: int
+    start_time: datetime
+    duration: int
 
 
 class LastAttemptResultSchema(Schema):
@@ -197,7 +199,7 @@ class AttemptInfoSchema(Schema):
     correct_answers: dict[str, list[str]]
     created_at: datetime
 
-    def from_entity(entity: AttemptEntity) -> 'AttemptInfoSchema':
+    def from_entity(entity: AttemptEntity) -> "AttemptInfoSchema":
         return AttemptInfoSchema(
             attempt_id=entity.id,
             test_id=entity.test_id,
@@ -206,8 +208,9 @@ class AttemptInfoSchema(Schema):
             user_answers=entity.user_answers,
             total_score=entity.total_score,
             question_count=entity.question_count,
-            question_list=[QuestionSchemaOut.from_entity(
-                obj) for obj in entity.question_list],
+            question_list=[
+                QuestionSchemaOut.from_entity(obj) for obj in entity.question_list
+            ],
             correct_answers=entity.correct_answers,
             created_at=entity.created_at,
         )
