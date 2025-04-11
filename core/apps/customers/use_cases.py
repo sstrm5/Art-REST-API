@@ -66,4 +66,7 @@ class UpdateCustomerInfoUseCase:
                 first_name=first_name,
                 last_name=last_name,
             )
+        customer = self.customer_service.get_by_token(
+            token=token
+        )  # так не очень красиво выглядит, но пусть
         return customer

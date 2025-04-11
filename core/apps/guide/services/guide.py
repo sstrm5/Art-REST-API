@@ -37,7 +37,7 @@ class CardService(BaseCardService):
         search_query = SearchQuery(query, config="russian")
         cards = (
             Card.objects.annotate(rank=SearchRank(F("search_vector"), search_query))
-            .filter(search_vector=search_query)
+            .filter(rank__gte=0.01)
             .order_by("-rank")
         )
         return [card.to_entity() for card in cards]

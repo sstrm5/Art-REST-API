@@ -295,8 +295,6 @@ def get_attempt_list_handler_by_customer(
     except ServiceException as exception:
         raise HttpError(status_code=400, message=exception.message)
 
-    items = [AttemptSchemaOut.from_entity(
-        attempt_entity) for attempt_entity in attempt_list]
     items = [
         AttemptSchemaOut.from_entity(attempt_entity) for attempt_entity in attempt_list
     ]

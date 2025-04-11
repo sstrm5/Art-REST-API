@@ -19,11 +19,5 @@ class Migration(migrations.Migration):
             field=django.contrib.postgres.search.SearchVectorField(
                 blank=True, null=True
             ),
-        ),
-        migrations.AddIndex(
-            model_name="card",
-            index=django.contrib.postgres.indexes.GinIndex(
-                fields=["search_vector"], name="guide_card_search__53bf4a_gin"
-            ),
-        ),
+        )
     ]

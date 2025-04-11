@@ -16,6 +16,7 @@ from core.apps.customers.exceptions.customers import (
     RefreshTokenNotFoundException,
     CustomerDoesNotExist,
 )
+from core.apps.customers.image import compress_image
 from core.apps.customers.models import Customer
 
 
