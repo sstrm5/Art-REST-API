@@ -4,13 +4,13 @@ networks:
     external: true
 
 services:
-  django:
+  django1:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: django
+    container_name: django1
     ports: 
-      - "${DJANGO_PORT}:8000"
+      - "${DJANGO_PORT_1}:8000"
     command: "sh /entrypoint.sh"
     env_file:
      - ../.env
@@ -19,9 +19,46 @@ services:
     volumes:
       - ..:/app/
       - staticfiles:/app/static
+      - mediafiles:/app/media
     networks:
       - dev
-
+  
+  django2:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: django2
+    ports: 
+      - "${DJANGO_PORT_2}:8000"
+    command: "sh /entrypoint.sh"
+    env_file:
+     - ../.env
+    depends_on:
+     - postgres
+    volumes:
+      - ..:/app/
+      - staticfiles:/app/static
+      - mediafiles:/app/media
+    networks:
+      - dev
+  
+  # react:
+  #   build:
+  #     context: ../../RussianArt
+  #     dockerfile: Dockerfile
+  #   container_name: react
+  #   ports:
+  #     - "${REACT_PORT}:3000"
+  #   command: "sh /entrypoint.sh"
+  #   env_file:
+  #    - ../.env
+  #   depends_on:
+  #    - django1
+  #    - django2
+  #   # volumes:
+  #   #   - staticfiles:/app/static
+  #   networks:
+  #     - dev
 
 volumes:
   staticfiles:
