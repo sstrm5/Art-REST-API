@@ -133,7 +133,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = "/django_static/"
 STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
@@ -157,7 +157,7 @@ CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = ["http://46.8.237.83"]
 CORS_ALLOW_HEADERS = "*"
 
-MEDIA_URL = "media/"
+MEDIA_URL = "django_media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
