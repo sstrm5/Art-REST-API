@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from core.apps.customers.services.customers import BaseCustomerService
 from core.apps.questions.containers import get_container
 from core.apps.questions.models.test_sessions import TestSession
+from core.apps.questions.services.attempts import BaseAttemptService
 from core.apps.questions.services.questions import BaseQuestionService, BaseTestService
 from core.apps.questions.services.test_sessions import BaseTestSessionService
 
@@ -16,5 +17,6 @@ def auto_submit_test(token: str, device_info: str):
         test_service=container.resolve(BaseTestService),
         question_service=container.resolve(BaseQuestionService),
         test_session_service=container.resolve(BaseTestSessionService),
+        attempt_service=container.resolve(BaseAttemptService),
     )
     use_case.execute(token=token, device_info=device_info)
