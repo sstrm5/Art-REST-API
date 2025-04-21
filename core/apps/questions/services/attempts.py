@@ -97,7 +97,7 @@ class ORMAttemptService(BaseAttemptService):
 
     def get_customer_attempt_list(self, user_id: int):
         attempts = AttemptModel.objects.filter(
-            user__id=user_id).order_by('-end_time')
+            user__id=user_id).exclude(time_spent=None).order_by('-end_time')
         return [attempt.to_entity() for attempt in attempts]
 
     def get_last_attempt(self, user_id: int):
